@@ -1,0 +1,11 @@
+# Compiled files
+tlip
+obj/
+*.o
+
+# Editor files
+.vscode/
+*~
+
+# Test images
+images/
