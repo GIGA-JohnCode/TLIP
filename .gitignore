@@ -9,3 +9,6 @@ obj/
 
 # Test images
 images/
+
+# Redundant Makefile
+Makefile
