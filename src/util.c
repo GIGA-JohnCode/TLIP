@@ -1,12 +1,16 @@
 #include "util.h"
+#include "tlip.h"
 
 #include <ctype.h>
 #include <errno.h>
+#include <gtk/gtk.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+static void show_error_dialog(GtkWindow *main_window, const char *error_message);
 
 int get_int(const char *prompt, int min_value, int max_value)
 {
@@ -53,4 +57,24 @@ int get_int(const char *prompt, int min_value, int max_value)
     // Should never actually reach here
     free(line);
     return min_value;
+}
+
+void show_error(const char *error_message)
+{
+    if (cli_mode)
+        fprintf(stderr, "%s\n", error_message);
+    else
+        show_error_dialog(main_window, error_message);
+}
+
+static void show_error_dialog(GtkWindow *main_window, const char *error_message)
+{
+    GtkWidget *dialog = gtk_message_dialog_new(main_window,
+                                               GTK_DIALOG_MODAL,
+                                               GTK_MESSAGE_ERROR,
+                                               GTK_BUTTONS_OK,
+                                               "Error");
+    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", error_message);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }
