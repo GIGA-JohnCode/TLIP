@@ -62,7 +62,7 @@ int get_int(const char *prompt, int min_value, int max_value)
 void show_error(const char *error_message)
 {
     if (cli_mode)
-        fprintf(stderr, "%s\n", error_message);
+        fprintf(stderr, "Error: %s\n", error_message);
     else
         show_error_dialog(main_window, error_message);
 }
