@@ -52,7 +52,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* default_path)
     return result;
 }
 
-bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size)
+static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size)
 {
     tjhandle compressor = tjInitCompress();
     if (!compressor)
@@ -75,7 +75,7 @@ bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigne
     return true;
 }
 
-bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
 {
     printf("Enter output path (or press enter to use default: %s): ", default_path);
     char output_path[PATH_MAX];
@@ -125,13 +125,13 @@ bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
     FILE *fp = fopen(unique_path, "wb");
     if (!fp)
     {
-        show_error(stderr, "Error: Could not open file for writing: %s\n", unique_path);
+        show_error("Could not open file for writing."); // can be more elaborate
         return false;
     }
 
     if (fwrite(jpeg_buffer, 1, jpeg_size, fp) != jpeg_size)
     {
-        fprintf(stderr, "Error: Could not write JPEG data\n");
+        show_error("Could not write JPEG data");
         fclose(fp);
         return false;
     }
