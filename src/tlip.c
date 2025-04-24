@@ -3,8 +3,8 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 
-bool cli_mode;
-GtkWindow *main_window;
+bool cli_mode == false;
+GtkWindow *main_window = NULL;
 
 int main(int argc, char* argv[])
 {
