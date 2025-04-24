@@ -82,7 +82,7 @@ bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
 
     if (!fgets(output_path, PATH_MAX, stdin))
     {
-        fprintf(stderr, "Error: Failed to read output path.\n");
+        show_error("Failed to read output path.");
         return false;
     }
 
@@ -96,7 +96,7 @@ bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
     char* dot = strrchr(output_path, '.');
     if (!dot)
     {
-        fprintf(stderr, "Error: Given path: %s doesn't have an extension.\n", output_path);
+        show_error("Given path: %s doesn't have an extension.");
         return false;
     }
 
@@ -125,7 +125,7 @@ bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
     FILE *fp = fopen(unique_path, "wb");
     if (!fp)
     {
-        fprintf(stderr, "Error: Could not open file for writing: %s\n", unique_path);
+        show_error(stderr, "Error: Could not open file for writing: %s\n", unique_path);
         return false;
     }
 
