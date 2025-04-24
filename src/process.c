@@ -1,4 +1,5 @@
 #include "process.h"
+#include "util.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -15,7 +16,7 @@ bool resize(rgb* palette, int new_width, int new_height)
     byte *temp_buffer = (byte*)malloc(new_width * new_height * components);
     if (!temp_buffer)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        show_error("Memory allocation failed.");
         return false;
     }
 
