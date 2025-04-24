@@ -66,7 +66,7 @@ bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigne
 
     if (result != 0)
     {
-        fprintf(stderr, "Error: JPEG compression failed: %s\n", tjGetErrorStr2(compressor));
+        show_error(tjGetErrorStr2(compressor));
         tjFree(*jpeg_buffer);
         tjDestroy(compressor);
         return false;
