@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <turbojpeg.h>
 
+static jpeg* read_jpeg(char *jpeg_path);
+static bool parse_jpeg(jpeg* image, tjhandle decompressor);
+static rgb* extract_rgb(jpeg* image, tjhandle decompressor);
+
 rgb* load_jpeg(char *jpeg_path)
 {
     jpeg* image = read_jpeg(jpeg_path);
@@ -15,7 +19,7 @@ rgb* load_jpeg(char *jpeg_path)
     tjhandle decompressor = tjInitDecompress();
     if (!decompressor)
     {
-        fprintf(stderr, "Error: TurboJPEG initialization failed: %s\n", tjGetErrorStr2(NULL));
+        show_error(tjGetErrorStr2(NULL));
         free(image->buffer);
         free(image);
         return NULL;
@@ -41,19 +45,19 @@ rgb* load_jpeg(char *jpeg_path)
         return palette;
 }
 
-jpeg* read_jpeg(char *jpeg_path)
+static jpeg* read_jpeg(char *jpeg_path)
 {
     jpeg *image = (jpeg*)malloc(sizeof(jpeg));
     if (!image)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        show_error("Memory allocation failed.");
         return NULL;
     }
 
     FILE *fptr = fopen(jpeg_path, "rb");
     if (!fptr)
     {
-        fprintf(stderr, "Error: Failed to open image at given path.\n");
+        show_error("Failed to open image at given path.");
         free(image);
         return NULL;
     }
@@ -65,7 +69,7 @@ jpeg* read_jpeg(char *jpeg_path)
     image->buffer = (byte*)malloc(sizeof(byte) * image->size);
     if (!image->buffer)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        show_error("Memory allocation failed.");
         free(image);
         fclose(fptr);
         return NULL;
@@ -73,7 +77,7 @@ jpeg* read_jpeg(char *jpeg_path)
 
     if (fread(image->buffer, 1, image->size, fptr) != image->size)
     {
-        fprintf(stderr, "Error: Failed to read image at given path.\n");
+        show_error("Failed to read image at given path.");
         free(image);
         fclose(fptr);
         return NULL;
@@ -83,23 +87,23 @@ jpeg* read_jpeg(char *jpeg_path)
     return image;
 }
 
-bool parse_jpeg(jpeg* image, tjhandle decompressor)
+static bool parse_jpeg(jpeg* image, tjhandle decompressor)
 {
     if (tjDecompressHeader3(decompressor, image->buffer, image->size,
        &(image->width), &(image->height), &(image->subsamp), &(image->colorspace)) < 0)
     {
-        fprintf(stderr, "Error: Failed to read JPEG header: %s\n", tjGetErrorStr2(decompressor));
+        show_error(tjGetErrorStr2(decompressor));
         return false;
     }
     return true;
 }
 
-rgb* extract_rgb(jpeg* image, tjhandle decompressor)
+static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
 {
     rgb* palette = (rgb*)malloc(sizeof(rgb));
     if (!palette)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        show_error("Memory allocation failed.");
         return NULL;
     }
 
@@ -110,7 +114,7 @@ rgb* extract_rgb(jpeg* image, tjhandle decompressor)
     palette->buffer = (byte*)malloc(palette->width * palette->height * palette->components);
     if (!palette->buffer)
     {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
+        show_error("Memory allocation failed.");
         free(palette);
         return NULL;
     }
@@ -118,7 +122,7 @@ rgb* extract_rgb(jpeg* image, tjhandle decompressor)
     if (tjDecompress2(decompressor, image->buffer, image->size,
         palette->buffer, palette->width, 0, palette->height, TJPF_RGB, TJFLAG_ACCURATEDCT) < 0)
     {
-        fprintf(stderr, "Error: JPEG decompression failed: %s\n", tjGetErrorStr2(decompressor));
+        show_error(tjGetErrorStr2(decompressor));
         free(palette->buffer);
         free(palette);
         return NULL;

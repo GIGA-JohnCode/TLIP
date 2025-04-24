@@ -7,6 +7,9 @@
 #include <string.h>
 #include <turbojpeg.h>
 
+static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size);
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path);
+
 bool store_jpeg(rgb* palette, size_t target_size, char* default_path)
 {
     byte *jpeg_buffer = NULL;
