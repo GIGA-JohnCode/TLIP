@@ -1,4 +1,5 @@
 #include "jpeg.h"
+#include "util.h"
 
 #include <stdbool.h>
 #include <stdio.h>
