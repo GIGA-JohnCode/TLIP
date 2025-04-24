@@ -7,7 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-int cli_main()
+int cli_main(void)
 {
     // Prepare to get image path
     char *jpeg_path = NULL;
