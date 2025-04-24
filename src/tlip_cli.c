@@ -8,7 +8,7 @@
 #include <time.h>
 #include <turbojpeg.h>
 
-int main(int argc, char *argv[])
+int main()
 {
     // Prepare to get image path
     char *jpeg_path = NULL;
