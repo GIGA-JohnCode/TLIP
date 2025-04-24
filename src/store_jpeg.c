@@ -1,4 +1,5 @@
 #include "jpeg.h"
+#include "util.h"
 
 #include <linux/limits.h>
 #include <stdbool.h>
@@ -44,9 +45,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* default_path)
         quality -= 5;
     }
     if (failed)
-        fprintf(stderr, "Warning: Could not meet target size %zu bytes.\n"
-                "Attempting to save image of size: %lu bytes at quality: 30.\n",
-                target_size, jpeg_size);
+        show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
 
     bool result = write_jpeg(jpeg_buffer, jpeg_size, default_path);
     tjFree(jpeg_buffer);
@@ -58,7 +57,7 @@ bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigne
     tjhandle compressor = tjInitCompress();
     if (!compressor)
     {
-        fprintf(stderr, "Error: TurboJPEG initialization failed: %s\n", tjGetErrorStr2(NULL));
+        show_error(tjGetErrorStr2(NULL));
         return false;
     }
 
