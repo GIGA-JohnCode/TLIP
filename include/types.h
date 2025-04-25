@@ -17,6 +17,7 @@ typedef struct
 typedef struct
 {
     byte *buffer;
+    size_t original_size;
     int width;
     int height;
     int components;

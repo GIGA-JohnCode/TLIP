@@ -6,14 +6,18 @@
 #include <stdlib.h>
 
 static GtkWidget *input_file_entry;
+static GtkWidget *width_info_label;
 static GtkWidget *width_entry;
+static GtkWidget *height_info_label;
 static GtkWidget *height_entry;
+static GtkWidget *size_info_label;
 static GtkWidget *size_entry;
 static GtkWidget *output_file_entry;
 
 static void on_activate(GtkApplication *app);
 static void on_input_browse_clicked(GtkButton *button, gpointer user_data);
 static void input_file_selected(GObject *source, GAsyncResult *res, gpointer user_data);
+static void update_image_info(int width, int height, size_t file_size);
 static void on_output_browse_clicked(GtkButton *button, gpointer user_data);
 static void output_file_selected(GObject *source, GAsyncResult *res, gpointer user_data);
 static void on_process_clicked(GtkButton *button, gpointer user_data);
@@ -50,6 +54,18 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *input_browse_button = gtk_button_new_with_label("Browse");
                     g_signal_connect(input_browse_button, "clicked", G_CALLBACK(on_input_browse_clicked), NULL);
 
+            GtkWidget *dimension_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+                GtkWidget *width_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                    GtkWidget *width_info_label_static = gtk_label_new("Current Width:");
+                    /*Global*/ width_info_label = gtk_label_new("-");
+                GtkWidget *height_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                    GtkWidget *height_info_label_static = gtk_label_new("Current Height:");
+                    /*Global*/ height_info_label = gtk_label_new("-");
+
+            GtkWidget *size_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+                GtkWidget *size_info_label_static = gtk_label_new("Current Size:");
+                /*Global*/ size_info_label = gtk_label_new("-");
+
             GtkWidget *dimension_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
                 GtkWidget *width_label = gtk_label_new("Width:");
                 /*Global*/ width_entry = gtk_entry_new();
@@ -70,6 +86,12 @@ static void on_activate(GtkApplication *app)
             GtkWidget *process_button = gtk_button_new_with_label("Process");
                 g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
 
+                    gtk_box_append(GTK_BOX(height_info_box), height_info_label_static);
+                    gtk_box_append(GTK_BOX(height_info_box), height_info_label);
+
+                    gtk_box_append(GTK_BOX(width_info_box), width_info_label_static);
+                    gtk_box_append(GTK_BOX(width_info_box), width_info_label);
+
                 gtk_box_append(GTK_BOX(output_box), output_label);
                 gtk_box_append(GTK_BOX(output_box), output_file_entry);
                 gtk_box_append(GTK_BOX(output_box), output_browse_button);
@@ -77,17 +99,25 @@ static void on_activate(GtkApplication *app)
                 gtk_box_append(GTK_BOX(size_box), size_label);
                 gtk_box_append(GTK_BOX(size_box), size_entry);
 
+                gtk_box_append(GTK_BOX(size_info_box), size_info_label_static);
+                gtk_box_append(GTK_BOX(size_info_box), size_info_label);
+
                 gtk_box_append(GTK_BOX(dimension_box), width_label);
                 gtk_box_append(GTK_BOX(dimension_box), width_entry);
                 gtk_box_append(GTK_BOX(dimension_box), height_label);
                 gtk_box_append(GTK_BOX(dimension_box), height_entry);
+
+                gtk_box_append(GTK_BOX(dimension_info_box), width_info_box);
+                gtk_box_append(GTK_BOX(dimension_info_box), height_info_box);
 
                 gtk_box_append(GTK_BOX(input_box), input_label);
                 gtk_box_append(GTK_BOX(input_box), input_file_entry);
                 gtk_box_append(GTK_BOX(input_box), input_browse_button);
 
             gtk_box_append(GTK_BOX(main_box), input_box);
+            gtk_box_append(GTK_BOX(main_box), dimension_info_box);
             gtk_box_append(GTK_BOX(main_box), dimension_box);
+            gtk_box_append(GTK_BOX(main_box), size_info_box);
             gtk_box_append(GTK_BOX(main_box), size_box);
             gtk_box_append(GTK_BOX(main_box), output_box);
             gtk_box_append(GTK_BOX(main_box), process_button);
@@ -112,9 +142,30 @@ static void input_file_selected(GObject *source, GAsyncResult *res, gpointer use
     {
         char *path = g_file_get_path(file);
         gtk_editable_set_text(GTK_EDITABLE(input_file_entry), path);
+
+        rgb *palette = load_jpeg(path);
+        if (palette)
+        {
+            update_image_info(palette->width, palette->height, palette->original_size);
+            free(palette->buffer);
+            free(palette);
+        }
         g_free(path);
         g_object_unref(file);
     }
+}
+
+static void update_image_info(int width, int height, size_t file_size)
+{
+    char width_text[30], height_text[32], size_text[32];
+
+    snprintf(width_text, sizeof(width_text), "%i px", width);
+    snprintf(height_text, sizeof(height_text), "%i px", height);
+    snprintf(size_text, sizeof(size_text), "%.1f KB", file_size / 1024.0);
+
+    gtk_label_set_text(GTK_LABEL(width_info_label), width_text);
+    gtk_label_set_text(GTK_LABEL(height_info_label), height_text);
+    gtk_label_set_text(GTK_LABEL(size_info_label), size_text);
 }
 
 static void on_output_browse_clicked(GtkButton *button, gpointer user_data)

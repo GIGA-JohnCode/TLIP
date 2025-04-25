@@ -107,6 +107,7 @@ static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
         return NULL;
     }
 
+    palette->original_size = image->size;
     palette->width = image->width;
     palette->height = image->height;
     palette->components = 3;

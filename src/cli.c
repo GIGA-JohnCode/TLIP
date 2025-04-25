@@ -51,6 +51,7 @@ int cli_main(void)
     }
 
     srand(time(NULL));
+    printf("Current size: %.1f KB\n ", palette->original_size / 1024.0);
     size_t target_size = 1024 * get_int("Enter max jpeg size in KB: ");
 
     printf("Enter output path (or press enter to use default: %s): ", input_path);
