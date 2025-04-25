@@ -13,12 +13,14 @@ static GtkWidget *output_file_entry;
 
 static void on_activate(GtkApplication *app);
 static void on_input_browse_clicked(GtkButton *button, gpointer user_data);
+static void input_file_selected(GObject *source, GAsyncResult *res, gpointer user_data);
 static void on_output_browse_clicked(GtkButton *button, gpointer user_data);
+static void output_file_selected(GObject *source, GAsyncResult *res, gpointer user_data);
 static void on_process_clicked(GtkButton *button, gpointer user_data);
 
 int gui_main(void)
 {
-    GtkApplication * app = gtk_application_new("com.example.tlip", G_APPLICATION_FLAGS_NONE);
+    GtkApplication * app = gtk_application_new("com.example.tlip", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
 
     int status = g_application_run(G_APPLICATION(app), 0, NULL);
@@ -92,54 +94,56 @@ static void on_activate(GtkApplication *app)
 
         gtk_window_set_child(GTK_WINDOW(window), main_box);
 
-    gtk_widget_show(window);
+    gtk_window_present(GTK_WINDOW(window));
 }
 
 static void on_input_browse_clicked(GtkButton *button, gpointer user_data)
 {
-    GtkWidget *dialog = gtk_file_chooser_dialog_new(
-        "Choose Image", GTK_WINDOW(main_window),
-        GTK_FILE_CHOOSER_ACTION_OPEN,
-        "Cancel", GTK_RESPONSE_CANCEL,
-        "Open", GTK_RESPONSE_ACCEPT,
-        NULL);
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    gtk_file_dialog_set_title(dialog, "Choose Image");
+    gtk_file_dialog_open(dialog, GTK_WINDOW(main_window), NULL, input_file_selected, NULL);
+    g_object_unref(dialog);
+}
 
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+static void input_file_selected(GObject *source, GAsyncResult *res, gpointer user_data)
+{
+    GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), res, NULL);
+    if (file)
     {
-        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        gtk_entry_set_text(GTK_ENTRY(input_file_entry), filename);
-        g_free(filename);
+        char *path = g_file_get_path(file);
+        gtk_editable_set_text(GTK_EDITABLE(input_file_entry), path);
+        g_free(path);
+        g_object_unref(file);
     }
-
-    gtk_widget_destroy(dialog);
 }
 
 static void on_output_browse_clicked(GtkButton *button, gpointer user_data)
 {
-    GtkWidget *dialog = gtk_file_chooser_dialog_new(
-        "Save Image", GTK_WINDOW(main_window),
-        GTK_FILE_CHOOSER_ACTION_SAVE,
-        "Cancel", GTK_RESPONSE_CANCEL,
-        "Save", GTK_RESPONSE_ACCEPT,
-        NULL);
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    gtk_file_dialog_set_title(dialog, "Save Image");
+    gtk_file_dialog_save(dialog, GTK_WINDOW(main_window), NULL, output_file_selected, NULL);
+    g_object_unref(dialog);
+}
 
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+static void output_file_selected(GObject *source, GAsyncResult *res, gpointer user_data)
+{
+    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), res, NULL);
+    if (file)
     {
-        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        gtk_entry_set_text(GTK_ENTRY(output_file_entry), filename);
-        g_free(filename);
+        char *path = g_file_get_path(file);
+        gtk_editable_set_text(GTK_EDITABLE(output_file_entry), path);
+        g_free(path);
+        g_object_unref(file);
     }
-
-    gtk_widget_destroy(dialog);
 }
 
 static void on_process_clicked(GtkButton *button, gpointer user_data)
 {
-    const char *input_path = gtk_entry_get_text(GTK_ENTRY(input_file_entry));
-    const char *width_str = gtk_entry_get_text(GTK_ENTRY(width_entry));
-    const char *height_str = gtk_entry_get_text(GTK_ENTRY(height_entry));
-    const char *size_str = gtk_entry_get_text(GTK_ENTRY(size_entry));
-    const char *output_path = gtk_entry_get_text(GTK_ENTRY(output_file_entry));
+    const char *input_path = gtk_editable_get_text(GTK_EDITABLE(input_file_entry));
+    const char *width_str = gtk_editable_get_text(GTK_EDITABLE(width_entry));
+    const char *height_str = gtk_editable_get_text(GTK_EDITABLE(height_entry));
+    const char *size_str = gtk_editable_get_text(GTK_EDITABLE(size_entry));
+    const char *output_path = gtk_editable_get_text(GTK_EDITABLE(output_file_entry));
 
     if (!input_path || input_path[0] == '\0')
     {

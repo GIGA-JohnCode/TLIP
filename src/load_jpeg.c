@@ -10,7 +10,7 @@ static jpeg* read_jpeg(const char *input_path);
 static bool parse_jpeg(jpeg* image, tjhandle decompressor);
 static rgb* extract_rgb(jpeg* image, tjhandle decompressor);
 
-rgb* load_jpeg(char *input_path)
+rgb* load_jpeg(const char *input_path)
 {
     jpeg* image = read_jpeg(input_path);
     if (!image)

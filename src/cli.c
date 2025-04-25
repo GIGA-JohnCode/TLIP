@@ -44,6 +44,8 @@ int cli_main(void)
 
     if (!resize(palette, new_width, new_height))
     {
+        free(palette->buffer);
+        free(palette);
         free(input_path);
         return -1;
     }
@@ -57,6 +59,8 @@ int cli_main(void)
     if (!fgets(output_path, PATH_MAX, stdin))
     {
         show_error("Failed to read output path.");
+        free(palette->buffer);
+        free(palette);
         free(input_path);
         return -1;
     }

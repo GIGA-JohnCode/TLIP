@@ -1,4 +1,5 @@
 #include "jpeg.h"
+#include "tlip.h"
 #include "util.h"
 
 #include <limits.h>
@@ -23,7 +24,6 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
         show_error("Invalid size");
         return false;
     }
-
     double reduction_needed = 1 - ((double)target_size / jpeg_size);
 
     int quality;
@@ -54,7 +54,6 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
     }
     if (failed)
         show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
-
     bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path);
     tjFree(jpeg_buffer);
     return result;
@@ -91,13 +90,12 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
         show_error("Given path: %s doesn't have an extension.");
         return false;
     }
+
     // To Do: make another param called default_path, check output_path validity
     //        choose default_path if invalid
-    while (tester = fopen())
-
     char unique_path[PATH_MAX];
     strcpy(unique_path, output_path);
-
+    FILE *tester = NULL;
     while ((tester = fopen(unique_path, "r")) != NULL)
     {
         fclose(tester);
@@ -131,22 +129,20 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     }
 
     fclose(fp);
-
     // To Do: define something similar to show_error to make this more "elegant"
+
     if (cli_mode)
         printf("Successfully saved JPEG to: %s\n", unique_path);
     else
     {
-        GtkWidget *success_dialog = gtk_message_dialog_new(GTK_WINDOW(main_window),
-                                                           GTK_DIALOG_MODAL,
-                                                           GTK_MESSAGE_INFO,
-                                                           GTK_BUTTONS_OK,
-                                                           "Success");
-        gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(success_dialog),
-                                                "Image processed successfully!");
-        gtk_dialog_run(GTK_DIALOG(success_dialog));
-        gtk_widget_destroy(success_dialog);
+        GtkAlertDialog *success_dialog = gtk_alert_dialog_new("Success");
+        char detail[PATH_MAX + 50];
+        snprintf(detail, sizeof(detail), "Image processed successfully to: %s", unique_path);
+        gtk_alert_dialog_set_detail(success_dialog, detail);
+        gtk_alert_dialog_set_buttons(success_dialog, (const char*[]){"OK", NULL});
+        gtk_alert_dialog_set_modal(success_dialog, TRUE);
+        gtk_alert_dialog_show(success_dialog, GTK_WINDOW(main_window));
+        g_object_unref(success_dialog);
     }
-
     return true;
 }

@@ -61,7 +61,7 @@ int get_int(const char *prompt)
 
     // Should never actually reach here
     free(line);
-    return min_value;
+    return value;
 }
 
 void show_error(const char *error_message)
@@ -74,12 +74,11 @@ void show_error(const char *error_message)
 
 static void show_error_dialog(GtkWindow *parent, const char *error_message)
 {
-    GtkWidget *dialog = gtk_message_dialog_new(parent,
-                                               GTK_DIALOG_MODAL,
-                                               GTK_MESSAGE_ERROR,
-                                               GTK_BUTTONS_OK,
-                                               "Error");
-    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", error_message);
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
+    GtkAlertDialog *dialog = gtk_alert_dialog_new("Error");
+    gtk_alert_dialog_set_detail(dialog, error_message);
+    gtk_alert_dialog_set_buttons(dialog, (const char*[]){"OK", NULL});
+    gtk_alert_dialog_set_modal(dialog, TRUE);
+    gtk_alert_dialog_show(dialog, parent);
+    g_object_unref(dialog);
 }
+
