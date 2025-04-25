@@ -6,7 +6,7 @@
 
 #include "types.h"
 
-rgb* load_jpeg(char *jpeg_path);
+rgb* load_jpeg(const char *jpeg_path);
 
 bool store_jpeg(rgb* palette, size_t target_size, char* default_path);
 

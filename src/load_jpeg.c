@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <turbojpeg.h>
 
-static jpeg* read_jpeg(char *jpeg_path);
+static jpeg* read_jpeg(const char *jpeg_path);
 static bool parse_jpeg(jpeg* image, tjhandle decompressor);
 static rgb* extract_rgb(jpeg* image, tjhandle decompressor);
 
@@ -45,7 +45,7 @@ rgb* load_jpeg(char *jpeg_path)
         return palette;
 }
 
-static jpeg* read_jpeg(char *jpeg_path)
+static jpeg* read_jpeg(const char *jpeg_path)
 {
     jpeg *image = (jpeg*)malloc(sizeof(jpeg));
     if (!image)
@@ -130,4 +130,3 @@ static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
 
     return palette;
 }
-

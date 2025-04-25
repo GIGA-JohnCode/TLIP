@@ -75,24 +75,8 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
     return true;
 }
 
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path)
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path)
 {
-    printf("Enter output path (or press enter to use default: %s): ", default_path);
-    char output_path[PATH_MAX];
-
-    if (!fgets(output_path, PATH_MAX, stdin))
-    {
-        show_error("Failed to read output path.");
-        return false;
-    }
-
-    size_t len = strlen(output_path);
-    if (len > 0 && output_path[len - 1] == '\n')
-        output_path[len - 1] = '\0';
-
-    if (output_path[0] == '\0')
-        strcpy(output_path, default_path);
-
     char* dot = strrchr(output_path, '.');
     if (!dot)
     {
@@ -137,6 +121,6 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default
     }
 
     fclose(fp);
-    printf("Successfully saved JPEG to: %s\n", unique_path);
+    // printf("Successfully saved JPEG to: %s\n", unique_path); will define something similar to show_error
     return true;
 }

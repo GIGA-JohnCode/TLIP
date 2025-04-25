@@ -1,5 +1,6 @@
 #include "tlip.h"
 
+#include <linux/limits.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,7 +19,7 @@ int cli_main(void)
     {
         printf("Enter image path: ");
         if (getline(&jpeg_path, &line_buf_size, stdin) == -1)
-            fprintf(stderr, "Error: Failed to read image path, please try again.\n");
+            show_error("Failed to read image path, please try again.");
         else
             break;
     }
@@ -49,7 +50,25 @@ int cli_main(void)
 
     srand(time(NULL));
     size_t target_size = 1024 * get_int("Enter max jpeg size in KB: ", 1, INT_MAX);
-    bool result = store_jpeg(palette, target_size, jpeg_path);
+
+    printf("Enter output path (or press enter to use default: %s): ", jpeg_path);
+    char output_path[PATH_MAX];
+
+    if (!fgets(output_path, PATH_MAX, stdin))
+    {
+        show_error("Failed to read output path.");
+        free(jpeg_path);
+        return -1;
+    }
+
+    len = strlen(output_path);
+    if (len > 0 && output_path[len - 1] == '\n')
+        output_path[len - 1] = '\0';
+
+    if (output_path[0] == '\0')
+        strcpy(output_path, jpeg_path);
+
+    bool result = store_jpeg(palette, target_size, output_path);
     free(palette->buffer);
     free(palette);
     free(jpeg_path);
