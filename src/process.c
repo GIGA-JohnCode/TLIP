@@ -10,12 +10,14 @@ bool resize(rgb* palette, int new_width, int new_height)
     int old_height = palette->height;
     int components = palette->components;
 
-    if ((old_width == new_width && old_height == new_height) ||
-        (new_width < 1 || new_height < 1))
+    if (new_width < 1 || new_height < 1)
     {
         show_error("Invalid dimensions.");
         return false;
     }
+
+    if (old_width == new_width && old_height == new_height)
+        return true;
 
     byte *temp_buffer = (byte*)malloc(new_width * new_height * components);
     if (!temp_buffer)
