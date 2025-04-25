@@ -1,6 +1,9 @@
 #include "tlip.h"
 
 #include <gtk/gtk.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 static GtkWidget *input_file_entry;
 static GtkWidget *width_entry;
@@ -10,7 +13,8 @@ static GtkWidget *output_file_entry;
 
 static void on_activate(GtkApplication *app);
 static void on_input_browse_clicked(GtkButton *button, gpointer user_data);
-static void on_output_browse_clicked(GtkButton *Button, gpointer user_data);
+static void on_output_browse_clicked(GtkButton *button, gpointer user_data);
+static void on_process_clicked(GtkButton *button, gpointer user_data);
 
 int gui_main(void)
 {
@@ -61,6 +65,9 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *output_browse_button = gtk_button_new_with_label("Browse");
                     g_signal_connect(output_browse_button, "clicked", G_CALLBACK(on_output_browse_clicked), NULL);
 
+            GtkWidget *process_button = gtk_button_new_with_label("Process");
+                g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
+
                 gtk_box_append(GTK_BOX(output_box), output_label);
                 gtk_box_append(GTK_BOX(output_box), output_file_entry);
                 gtk_box_append(GTK_BOX(output_box), output_browse_button);
@@ -81,6 +88,7 @@ static void on_activate(GtkApplication *app)
             gtk_box_append(GTK_BOX(main_box), dimension_box);
             gtk_box_append(GTK_BOX(main_box), size_box);
             gtk_box_append(GTK_BOX(main_box), output_box);
+            gtk_box_append(GTK_BOX(main_box), process_button);
 
         gtk_window_set_child(GTK_WINDOW(window), main_box);
 
@@ -127,7 +135,7 @@ static void on_output_browse_clicked(GtkButton *button, gpointer user_data)
 
 static void on_process_clicked(GtkButton *button, gpointer user_data)
 {
-    const char *jpeg_path = gtk_entry_get_text(GTK_ENTRY(input_file_entry));
+    const char *input_path = gtk_entry_get_text(GTK_ENTRY(input_file_entry));
     const char *width_str = gtk_entry_get_text(GTK_ENTRY(width_entry));
     const char *height_str = gtk_entry_get_text(GTK_ENTRY(height_entry));
     const char *size_str = gtk_entry_get_text(GTK_ENTRY(size_entry));
@@ -139,10 +147,49 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         return;
     }
 
-    rgb* palette = load_jpeg(jpeg_path);
+    if ((!width_str || width_str[0] == '\0') &&
+        (!height_str || height_str[0] == '\0') &&
+        (!size_str || size_str[0] == '\0'))
+    {
+        show_error("Please specify either dimension or max size");
+        return;
+    }
+
+    rgb* palette = load_jpeg(input_path);
     if (!palette)
         return;
 
-    
+    int new_width, new_height;
+    if (width_str && width_str[0] != '\0')
+        new_width = atoi(width_str);
+    else
+        new_width = palette->width;
+    if (height_str && height_str[0] != '\0')
+        new_height = atoi(height_str);
+    else
+        new_height = palette->height;
+
+    if (!resize(palette, new_width, new_height))
+    {
+        free(palette->buffer);
+        free(palette);
+        return;
+    }
+
+    size_t target_size;
+    if (size_str && size_str[0] != '\0')
+        target_size = 1024 * atoi(size_str);
+    else
+        target_size = SIZE_MAX;
+
+    if (output_path && output_path[0] != '\0')
+    {
+        store_jpeg(palette, target_size, (char*)output_path);
+    }
+    else
+        store_jpeg(palette, target_size, (char*)input_path);
+
+    free(palette->buffer);
+    free(palette);
 }
 

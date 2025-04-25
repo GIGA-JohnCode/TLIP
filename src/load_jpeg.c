@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <turbojpeg.h>
 
-static jpeg* read_jpeg(const char *jpeg_path);
+static jpeg* read_jpeg(const char *input_path);
 static bool parse_jpeg(jpeg* image, tjhandle decompressor);
 static rgb* extract_rgb(jpeg* image, tjhandle decompressor);
 
-rgb* load_jpeg(char *jpeg_path)
+rgb* load_jpeg(char *input_path)
 {
-    jpeg* image = read_jpeg(jpeg_path);
+    jpeg* image = read_jpeg(input_path);
     if (!image)
         return NULL;
 
@@ -45,7 +45,7 @@ rgb* load_jpeg(char *jpeg_path)
         return palette;
 }
 
-static jpeg* read_jpeg(const char *jpeg_path)
+static jpeg* read_jpeg(const char *input_path)
 {
     jpeg *image = (jpeg*)malloc(sizeof(jpeg));
     if (!image)
@@ -54,7 +54,7 @@ static jpeg* read_jpeg(const char *jpeg_path)
         return NULL;
     }
 
-    FILE *fptr = fopen(jpeg_path, "rb");
+    FILE *fptr = fopen(input_path, "rb");
     if (!fptr)
     {
         show_error("Failed to open image at given path.");

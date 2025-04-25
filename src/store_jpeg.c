@@ -1,20 +1,28 @@
 #include "jpeg.h"
 #include "util.h"
 
+#include <limits.h>
 #include <linux/limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <turbojpeg.h>
 
 static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size);
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* default_path);
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path);
 
-bool store_jpeg(rgb* palette, size_t target_size, char* default_path)
+bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
 {
     byte *jpeg_buffer = NULL;
     unsigned long jpeg_size = tjBufSize(palette->width, palette->height, TJSAMP_420);
+
+    if (target_size < 1 || target_size > SIZE_MAX)
+    {
+        show_error("Invalid size");
+        return false;
+    }
 
     double reduction_needed = 1 - ((double)target_size / jpeg_size);
 
@@ -47,7 +55,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* default_path)
     if (failed)
         show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
 
-    bool result = write_jpeg(jpeg_buffer, jpeg_size, default_path);
+    bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path);
     tjFree(jpeg_buffer);
     return result;
 }
@@ -83,11 +91,13 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
         show_error("Given path: %s doesn't have an extension.");
         return false;
     }
+    // To Do: make another param called default_path, check output_path validity
+    //        choose default_path if invalid
+    while (tester = fopen())
 
     char unique_path[PATH_MAX];
     strcpy(unique_path, output_path);
 
-    FILE *tester = NULL;
     while ((tester = fopen(unique_path, "r")) != NULL)
     {
         fclose(tester);
@@ -109,7 +119,7 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     FILE *fp = fopen(unique_path, "wb");
     if (!fp)
     {
-        show_error("Could not open file for writing."); // can be more elaborate
+        show_error("Could not open file for writing."); // To Do: can be more elaborate
         return false;
     }
 
@@ -121,6 +131,22 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     }
 
     fclose(fp);
-    // printf("Successfully saved JPEG to: %s\n", unique_path); will define something similar to show_error
+
+    // To Do: define something similar to show_error to make this more "elegant"
+    if (cli_mode)
+        printf("Successfully saved JPEG to: %s\n", unique_path);
+    else
+    {
+        GtkWidget *success_dialog = gtk_message_dialog_new(GTK_WINDOW(main_window),
+                                                           GTK_DIALOG_MODAL,
+                                                           GTK_MESSAGE_INFO,
+                                                           GTK_BUTTONS_OK,
+                                                           "Success");
+        gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(success_dialog),
+                                                "Image processed successfully!");
+        gtk_dialog_run(GTK_DIALOG(success_dialog));
+        gtk_widget_destroy(success_dialog);
+    }
+
     return true;
 }

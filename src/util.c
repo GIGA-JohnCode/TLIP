@@ -12,7 +12,14 @@
 
 static void show_error_dialog(GtkWindow *main_window, const char *error_message);
 
-int get_int(const char *prompt, int min_value, int max_value)
+bool int_in_range(int value, int min_value, int max_value)
+{
+    if (value < min_value || value > max_value)
+        return false;
+    return true;
+}
+
+int get_int(const char *prompt)
 {
     char *line = NULL;
     size_t line_len = 0;
@@ -45,8 +52,6 @@ int get_int(const char *prompt, int min_value, int max_value)
             fprintf(stderr, "Error: Invalid trailing characters found.\n");
         else if (errno == ERANGE || value > INT_MAX || value < INT_MIN)
             fprintf(stderr, "Error: Value out of int range.\n");
-        else if (value < min_value || value > max_value)
-            fprintf(stderr, "Error: Please enter value between %i and %i.\n", min_value, max_value);
         else
         {
             free(line);
