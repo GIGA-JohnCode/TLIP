@@ -34,6 +34,13 @@ int get_int(const char *prompt)
             continue;
         }
 
+        // Enable user the choice to not input any value
+        if (line[0] == '\n')
+        {
+            free(line);
+            return INT_MIN;
+        }
+
         char *endptr;
         errno = 0;
         value = strtol(line, &endptr, 10);

@@ -37,10 +37,14 @@ int cli_main(void)
         return -1;
     }
 
-    printf("Current width: %i, ", palette->width);
+    printf("Current width: %i px (Press Enter to keep current width)\n", palette->width);
     int new_width = get_int("Enter new width: ");
-    printf("Current height: %i, ", palette->height);
+    if (new_width == INT_MIN)
+        new_width = palette->width;
+    printf("Current height: %i px (Press Enter to keep current height)\n", palette->height);
     int new_height = get_int("Enter new height: ");
+    if (new_height == INT_MIN)
+        new_height = palette->height;
 
     if (!resize(palette, new_width, new_height))
     {
@@ -51,8 +55,23 @@ int cli_main(void)
     }
 
     srand(time(NULL));
-    printf("Current size: %.1f KB\n ", palette->original_size / 1024.0);
-    size_t target_size = 1024 * get_int("Enter max jpeg size in KB: ");
+    printf("Current size: %.1f KB (Press Enter to keep current size or 0 to have no limit)\n", palette->original_size / 1024.0);
+    size_t target_size = get_int("Enter max jpeg size in KB: ");
+    if (target_size == INT_MIN)
+        target_size = palette->original_size;
+    else if (target_size == 0)
+        target_size = SIZE_MAX;
+    else
+        target_size *= 1024;
+
+    if (new_width == palette->width && new_height == palette->height && target_size == palette->original_size)
+    {
+        show_error("Nothing to do.");
+        free(palette->buffer);
+        free(palette);
+        free(input_path);
+        return -1;
+    }
 
     printf("Enter output path (or press enter to use default: %s): ", input_path);
     char output_path[PATH_MAX];
