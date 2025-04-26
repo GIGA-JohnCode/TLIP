@@ -236,12 +236,15 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
     else
         target_size = SIZE_MAX;
 
-    if (output_path && output_path[0] != '\0')
+    if (!output_path && output_path[0] == '\0')
+        output_path = input_path;
+
+    char *save_path = store_jpeg(palette, target_size, (char*)output_path);
+    if (save_path)
     {
-        store_jpeg(palette, target_size, (char*)output_path);
+        alert("SUCCESS", "File was saved to: %s.\n", save_path);
+        free(save_path);
     }
-    else
-        store_jpeg(palette, target_size, (char*)input_path);
 
     free(palette->buffer);
     free(palette);

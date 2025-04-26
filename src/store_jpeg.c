@@ -12,9 +12,9 @@
 #include <turbojpeg.h>
 
 static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size);
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path);
+static char* write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path);
 
-bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
+char* store_jpeg(rgb* palette, size_t target_size, char* output_path)
 {
     byte *jpeg_buffer = NULL;
     unsigned long jpeg_size = tjBufSize(palette->width, palette->height, TJSAMP_420);
@@ -22,7 +22,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
     if (target_size < 1 || target_size > SIZE_MAX)
     {
         show_error("Invalid size");
-        return false;
+        return NULL;
     }
     double reduction_needed = 1 - ((double)target_size / jpeg_size);
 
@@ -43,7 +43,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
         jpeg_buffer = NULL;
 
         if (!encode_jpeg(palette, quality, &jpeg_buffer, &jpeg_size))
-            return false;
+            return NULL;
         if (jpeg_size <= target_size)
         {
             failed = false;
@@ -54,9 +54,9 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
     }
     if (failed)
         show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
-    bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path);
+    char *unique_path = write_jpeg(jpeg_buffer, jpeg_size, output_path);
     tjFree(jpeg_buffer);
-    return result;
+    return unique_path;
 }
 
 static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size)
@@ -82,18 +82,23 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
     return true;
 }
 
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path)
+static char* write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path)
 {
     char* dot = strrchr(output_path, '.');
     if (!dot)
     {
         show_error("Given path: %s doesn't have an extension.");
-        return false;
+        return NULL;
     }
 
     // To Do: make another param called default_path, check output_path validity
     //        choose default_path if invalid
-    char unique_path[PATH_MAX];
+    char* unique_path = (char*)malloc(PATH_MAX);
+    if (!unique_path)
+    {
+        alert("ERROR", "Memory allocation failed.");
+        return NULL;
+    }
     strcpy(unique_path, output_path);
     FILE *tester = NULL;
     while ((tester = fopen(unique_path, "r")) != NULL)
@@ -118,31 +123,18 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     if (!fp)
     {
         show_error("Could not open file for writing."); // To Do: can be more elaborate
-        return false;
+        free(unique_path);
+        return NULL;
     }
 
     if (fwrite(jpeg_buffer, 1, jpeg_size, fp) != jpeg_size)
     {
         show_error("Could not write JPEG data");
         fclose(fp);
-        return false;
+        free(unique_path);
+        return NULL;
     }
 
     fclose(fp);
-    // To Do: define something similar to show_error to make this more "elegant"
-
-    if (cli_mode)
-        printf("Successfully saved JPEG to: %s\n", unique_path);
-    else
-    {
-        GtkAlertDialog *success_dialog = gtk_alert_dialog_new("Success");
-        char detail[PATH_MAX + 50];
-        snprintf(detail, sizeof(detail), "Image processed successfully to: %s", unique_path);
-        gtk_alert_dialog_set_detail(success_dialog, detail);
-        gtk_alert_dialog_set_buttons(success_dialog, (const char*[]){"OK", NULL});
-        gtk_alert_dialog_set_modal(success_dialog, TRUE);
-        gtk_alert_dialog_show(success_dialog, GTK_WINDOW(main_window));
-        g_object_unref(success_dialog);
-    }
-    return true;
+    return unique_path;
 }
