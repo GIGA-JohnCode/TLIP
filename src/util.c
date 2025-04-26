@@ -13,6 +13,7 @@
 
 #define ALERT_MAX 8192
 
+static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data);
 static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message);
 
 bool int_in_range(int value, int min_value, int max_value)
@@ -100,7 +101,18 @@ static void show_alert_dialog(GtkWindow *parent, const char *type, const char *m
     gtk_alert_dialog_set_detail(dialog, message);
     gtk_alert_dialog_set_buttons(dialog, (const char*[]){"OK", NULL});
     gtk_alert_dialog_set_modal(dialog, TRUE);
-    gtk_alert_dialog_show(dialog, parent);
+
+    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+    gtk_alert_dialog_choose(dialog, parent, NULL, (GAsyncReadyCallback)alert_done_callback, loop);
+    g_main_loop_run(loop);
+
+    g_main_loop_unref(loop);
     g_object_unref(dialog);
+}
+
+static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data)
+{
+    GMainLoop *loop = (GMainLoop *)user_data;
+    g_main_loop_quit(loop);
 }
 
