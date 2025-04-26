@@ -92,16 +92,13 @@ int cli_main(void)
     if (output_path[0] == '\0')
         strcpy(output_path, input_path);
 
-    char* save_path = store_jpeg(palette, target_size, output_path);
+    bool result = store_jpeg(palette, target_size, output_path);
     free(palette->buffer);
     free(palette);
     free(input_path);
-    if (!save_path)
+    if (!result)
         return -1;
     else
-    {
-        alert("SUCCESS", "File was saved to: %s.\n", save_path);
-        free(save_path);
         return 0;
-    }
+
 }
