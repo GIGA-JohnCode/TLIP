@@ -82,7 +82,7 @@ void show_error(const char *message)
 
 void alert(const char *type, const char *format, ...)
 {
-    char message[8192];
+    char message[ALERT_MAX];
 
     va_list args;
     va_start(args, format);
@@ -90,7 +90,7 @@ void alert(const char *type, const char *format, ...)
     va_end(args);
 
     if (cli_mode)
-        fprintf(stderr, "%s: %s\n", type, message);
+        fprintf(stderr, "%s: %s", type, message);
     else
         show_alert_dialog(main_window, type, message);
 }

@@ -59,8 +59,6 @@ int cli_main(void)
     size_t target_size = get_int("Enter max jpeg size in KB: ");
     if (target_size == INT_MIN)
         target_size = palette->original_size;
-    else if (target_size == 0)
-        target_size = SIZE_MAX;
     else
         target_size *= 1024;
 
@@ -100,5 +98,4 @@ int cli_main(void)
         return -1;
     else
         return 0;
-
 }

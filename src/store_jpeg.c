@@ -19,11 +19,15 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
     byte *jpeg_buffer = NULL;
     unsigned long jpeg_size = tjBufSize(palette->width, palette->height, TJSAMP_420);
 
-    if (target_size < 1 || target_size > SIZE_MAX)
+    if (target_size < 0 || target_size > SIZE_MAX)
     {
         show_error("Invalid size");
         return false;
     }
+
+    if (target_size == 0)
+        target_size = SIZE_MAX;
+
     double reduction_needed = 1 - ((double)target_size / jpeg_size);
 
     int quality;

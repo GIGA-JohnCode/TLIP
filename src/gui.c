@@ -54,23 +54,26 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *input_browse_button = gtk_button_new_with_label("Browse");
                     g_signal_connect(input_browse_button, "clicked", G_CALLBACK(on_input_browse_clicked), NULL);
 
-            GtkWidget *dimension_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
-                GtkWidget *width_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-                    GtkWidget *width_info_label_static = gtk_label_new("Current Width:");
-                    /*Global*/ width_info_label = gtk_label_new("-");
-                GtkWidget *height_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-                    GtkWidget *height_info_label_static = gtk_label_new("Current Height:");
-                    /*Global*/ height_info_label = gtk_label_new("-");
+            //GtkWidget *dimension_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+            GtkWidget *dimension_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 55);
+                GtkWidget *width_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+                    GtkWidget *width_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                        GtkWidget *width_info_label_static = gtk_label_new("Current Width:");
+                        /*Global*/ width_info_label = gtk_label_new("-");
+                    GtkWidget *width_entry_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                        GtkWidget *width_label = gtk_label_new("Width:");
+                        /*Global*/ width_entry = gtk_entry_new();
+                GtkWidget *height_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+                    GtkWidget *height_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                        GtkWidget *height_info_label_static = gtk_label_new("Current Height:");
+                        /*Global*/ height_info_label = gtk_label_new("-");
+                    GtkWidget *height_entry_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+                        GtkWidget *height_label = gtk_label_new("Height:");
+                        /*Global*/ height_entry = gtk_entry_new();
 
             GtkWidget *size_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
                 GtkWidget *size_info_label_static = gtk_label_new("Current Size:");
                 /*Global*/ size_info_label = gtk_label_new("-");
-
-            GtkWidget *dimension_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-                GtkWidget *width_label = gtk_label_new("Width:");
-                /*Global*/ width_entry = gtk_entry_new();
-                GtkWidget *height_label = gtk_label_new("Height:");
-                /*Global*/ height_entry = gtk_entry_new();
 
             GtkWidget *size_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
                 GtkWidget *size_label = gtk_label_new("Max Size (KB):");
@@ -83,14 +86,36 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *output_browse_button = gtk_button_new_with_label("Browse");
                     g_signal_connect(output_browse_button, "clicked", G_CALLBACK(on_output_browse_clicked), NULL);
 
+            GtkWidget *hints_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+                GtkWidget *hint_0 = gtk_label_new("HINTS");
+                GtkWidget *hint_1 = gtk_label_new("1. Leaving Width/Height/Size field/s empty means current value/s will be used.");
+                GtkWidget *hint_2 = gtk_label_new("2. Input 0(zero) in size field to remove size limit during encoding.");
+
             GtkWidget *process_button = gtk_button_new_with_label("Process");
                 g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
 
-                    gtk_box_append(GTK_BOX(height_info_box), height_info_label_static);
-                    gtk_box_append(GTK_BOX(height_info_box), height_info_label);
 
-                    gtk_box_append(GTK_BOX(width_info_box), width_info_label_static);
-                    gtk_box_append(GTK_BOX(width_info_box), width_info_label);
+                        gtk_box_append(GTK_BOX(width_info_box), width_info_label_static);
+                        gtk_box_append(GTK_BOX(width_info_box), width_info_label);
+
+                        gtk_box_append(GTK_BOX(width_entry_box), width_label);
+                        gtk_box_append(GTK_BOX(width_entry_box), width_entry);
+
+                        gtk_box_append(GTK_BOX(height_info_box), height_info_label_static);
+                        gtk_box_append(GTK_BOX(height_info_box), height_info_label);
+
+                        gtk_box_append(GTK_BOX(height_entry_box), height_label);
+                        gtk_box_append(GTK_BOX(height_entry_box), height_entry);
+
+                    gtk_box_append(GTK_BOX(height_box), height_info_box);
+                    gtk_box_append(GTK_BOX(height_box), height_entry_box);
+
+                    gtk_box_append(GTK_BOX(width_box), width_info_box);
+                    gtk_box_append(GTK_BOX(width_box), width_entry_box);
+
+                gtk_box_append(GTK_BOX(hints_box), hint_0);
+                gtk_box_append(GTK_BOX(hints_box), hint_1);
+                gtk_box_append(GTK_BOX(hints_box), hint_2);
 
                 gtk_box_append(GTK_BOX(output_box), output_label);
                 gtk_box_append(GTK_BOX(output_box), output_file_entry);
@@ -102,24 +127,19 @@ static void on_activate(GtkApplication *app)
                 gtk_box_append(GTK_BOX(size_info_box), size_info_label_static);
                 gtk_box_append(GTK_BOX(size_info_box), size_info_label);
 
-                gtk_box_append(GTK_BOX(dimension_box), width_label);
-                gtk_box_append(GTK_BOX(dimension_box), width_entry);
-                gtk_box_append(GTK_BOX(dimension_box), height_label);
-                gtk_box_append(GTK_BOX(dimension_box), height_entry);
-
-                gtk_box_append(GTK_BOX(dimension_info_box), width_info_box);
-                gtk_box_append(GTK_BOX(dimension_info_box), height_info_box);
+                gtk_box_append(GTK_BOX(dimension_box), width_box);
+                gtk_box_append(GTK_BOX(dimension_box), height_box);
 
                 gtk_box_append(GTK_BOX(input_box), input_label);
                 gtk_box_append(GTK_BOX(input_box), input_file_entry);
                 gtk_box_append(GTK_BOX(input_box), input_browse_button);
 
             gtk_box_append(GTK_BOX(main_box), input_box);
-            gtk_box_append(GTK_BOX(main_box), dimension_info_box);
             gtk_box_append(GTK_BOX(main_box), dimension_box);
             gtk_box_append(GTK_BOX(main_box), size_info_box);
             gtk_box_append(GTK_BOX(main_box), size_box);
             gtk_box_append(GTK_BOX(main_box), output_box);
+            gtk_box_append(GTK_BOX(main_box), hints_box);
             gtk_box_append(GTK_BOX(main_box), process_button);
 
         gtk_window_set_child(GTK_WINDOW(window), main_box);
@@ -206,7 +226,8 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         (!height_str || height_str[0] == '\0') &&
         (!size_str || size_str[0] == '\0'))
     {
-        show_error("All Input Fields Were Empty!\nRe-encoding image with max quality");
+        alert("ERROR", "Aborted\nNothing to process");
+        return;
     }
 
     rgb* palette = load_jpeg(input_path);
@@ -218,6 +239,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         new_width = atoi(width_str);
     else
         new_width = palette->width;
+    
     if (height_str && height_str[0] != '\0')
         new_height = atoi(height_str);
     else
