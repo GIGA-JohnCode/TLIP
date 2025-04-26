@@ -206,8 +206,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         (!height_str || height_str[0] == '\0') &&
         (!size_str || size_str[0] == '\0'))
     {
-        show_error("Please specify either dimension or max size");
-        return;
+        show_error("All Input Fields Were Empty!\nRe-encoding image with max quality");
     }
 
     rgb* palette = load_jpeg(input_path);

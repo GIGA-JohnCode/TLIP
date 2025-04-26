@@ -5,12 +5,15 @@
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static void show_error_dialog(GtkWindow *main_window, const char *error_message);
+#define ALERT_MAX 8192
+
+static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message);
 
 bool int_in_range(int value, int min_value, int max_value)
 {
@@ -71,18 +74,30 @@ int get_int(const char *prompt)
     return value;
 }
 
-void show_error(const char *error_message)
+void show_error(const char *message)
 {
-    if (cli_mode)
-        fprintf(stderr, "Error: %s\n", error_message);
-    else
-        show_error_dialog(main_window, error_message);
+    alert("ERROR", "%s", message);
 }
 
-static void show_error_dialog(GtkWindow *parent, const char *error_message)
+void alert(const char *type, const char *format, ...)
 {
-    GtkAlertDialog *dialog = gtk_alert_dialog_new("Error");
-    gtk_alert_dialog_set_detail(dialog, error_message);
+    char message[8192];
+
+    va_list args;
+    va_start(args, format);
+    vsnprintf(message, sizeof(message), format, args);
+    va_end(args);
+
+    if (cli_mode)
+        fprintf(stderr, "%s: %s\n", type, message);
+    else
+        show_alert_dialog(main_window, type, message);
+}
+
+static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message)
+{
+    GtkAlertDialog *dialog = gtk_alert_dialog_new("%s", type);
+    gtk_alert_dialog_set_detail(dialog, message);
     gtk_alert_dialog_set_buttons(dialog, (const char*[]){"OK", NULL});
     gtk_alert_dialog_set_modal(dialog, TRUE);
     gtk_alert_dialog_show(dialog, parent);
