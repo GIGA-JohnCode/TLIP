@@ -239,7 +239,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         new_width = atoi(width_str);
     else
         new_width = palette->width;
-    
+
     if (height_str && height_str[0] != '\0')
         new_height = atoi(height_str);
     else

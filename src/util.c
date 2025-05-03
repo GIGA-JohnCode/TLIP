@@ -2,9 +2,11 @@
 #include "tlip.h"
 
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <limits.h>
+#include <linux/limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -114,5 +116,35 @@ static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer 
 {
     GMainLoop *loop = (GMainLoop *)user_data;
     g_main_loop_quit(loop);
+}
+
+int evaluate_path(char *path)
+{
+    if (path[0] == '\0' || path[0] == '\n')
+        return -2;
+    FILE *file = fopen(path, "r");
+    if (file)
+    {
+        fclose(file);
+        return 1;
+    }
+
+    errno = 0;
+    char dir_path[PATH_MAX];
+    strcpy(dir_path, path);
+    char *last_slash = strrchr(dir_path, '/');
+    if (last_slash)
+        *last_slash = '\0';
+    else
+        strcpy(dir_path, ".");
+
+    DIR *dir = opendir(dir_path);
+    if (!dir)
+        return -1;
+    else
+    {
+        closedir(dir);
+        return 0;
+    }
 }
 
