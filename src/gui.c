@@ -261,7 +261,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
     if (!output_path && output_path[0] == '\0')
         output_path = input_path;
 
-    store_jpeg(palette, target_size, (char*)output_path);
+    store_jpeg(palette, target_size, (char*)output_path), (char*)input_path;
 
     free(palette->buffer);
     free(palette);

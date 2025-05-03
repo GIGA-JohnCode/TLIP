@@ -14,9 +14,18 @@
 #include <string.h>
 
 #define ALERT_MAX 8192
+#define RETRIES_MAX 100
+
+typedef struct
+{
+    gboolean *response;
+    GMainLoop *loop;
+} confirm_response_data;
 
 static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data);
 static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message);
+static void confirm_done_callback(GObject *source, GAsyncResult *result, gpointer user_data);
+static bool show_confirm_dialog(GtkWindow *parent, const char *message);
 
 bool int_in_range(int value, int min_value, int max_value)
 {
@@ -148,3 +157,92 @@ int evaluate_path(char *path)
     }
 }
 
+bool get_duplicate_path(char* output_path, char* input_path)
+{
+    char base[PATH_MAX];
+    char ext[20] = "";
+
+    char *dot = strrchr(input_path, '.');
+    strcpy(ext, dot);
+    *dot = '\0';
+    strcpy(base, input_path);
+
+    int counter = 0;
+    do
+    {
+        snprintf(output_path, PATH_MAX, "%s(%d)%s", base, ++counter, ext);
+
+        FILE *file = fopen(output_path, "r");
+        if (!file)
+            return true;
+        fclose(file);
+    }
+    while (counter < RETRIES_MAX);
+    return false;
+}
+
+bool confirm(const char *format, ...)
+{
+    char message[ALERT_MAX];
+
+    va_list args;
+    va_start(args, format);
+    vsnprintf(message, sizeof(message), format, args);
+    va_end(args);
+
+    if (cli_mode)
+    {
+        printf("%s [y/N]: ", message);
+
+        char response[10];
+        if (fgets(response, sizeof(response), stdin))
+        {
+            if (response[0] == 'y' || response[0] == 'Y')
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+    else
+        return show_confirm_dialog(main_window, message);
+}
+
+static bool show_confirm_dialog(GtkWindow *parent, const char *message)
+{
+    gboolean response = FALSE;
+
+    GtkAlertDialog *dialog = gtk_alert_dialog_new("Confirm");
+    gtk_alert_dialog_set_detail(dialog, message);
+
+    gtk_alert_dialog_set_buttons(dialog, (const char*[]){"No", "Yes", NULL});
+    gtk_alert_dialog_set_cancel_button(dialog, 0);
+    gtk_alert_dialog_set_default_button(dialog, 1);
+
+    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+    confirm_response_data data = { &response, loop };
+
+    gtk_alert_dialog_choose(dialog, parent, NULL,
+                           (GAsyncReadyCallback)confirm_done_callback, &data);
+
+    g_main_loop_run(loop);
+    g_main_loop_unref(loop);
+    g_object_unref(dialog);
+
+    return response;
+}
+
+static void confirm_done_callback(GObject *source, GAsyncResult *result, gpointer user_data)
+{
+    confirm_response_data *data = (confirm_response_data *)user_data;
+    gchar *response_id = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(source), result, NULL);
+
+    if (response_id && strcmp(response_id, "Yes") == 0)
+        *(data->response) = TRUE;
+    else
+        *(data->response) = FALSE;
+
+    g_free(response_id);
+    g_main_loop_quit(data->loop);
+}

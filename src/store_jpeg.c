@@ -12,9 +12,9 @@
 #include <turbojpeg.h>
 
 static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, unsigned long *jpeg_size);
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path);
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path, char* input_path);
 
-bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
+bool store_jpeg(rgb* palette, size_t target_size, char* output_path, char* input_path)
 {
     byte *jpeg_buffer = NULL;
     unsigned long jpeg_size = tjBufSize(palette->width, palette->height, TJSAMP_420);
@@ -58,7 +58,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path)
     }
     if (failed)
         show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
-    bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path);
+    bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path, input_path);
     tjFree(jpeg_buffer);
     return result;
 }
@@ -86,7 +86,7 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
     return true;
 }
 
-static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path)
+static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path, char* input_path)
 {
     char* dot = strrchr(output_path, '.');
     if (!dot)

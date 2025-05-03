@@ -90,7 +90,7 @@ int cli_main(void)
     if (output_path[0] == '\0')
         strcpy(output_path, input_path);
 
-    bool result = store_jpeg(palette, target_size, output_path);
+    bool result = store_jpeg(palette, target_size, output_path, input_path);
     free(palette->buffer);
     free(palette);
     free(input_path);

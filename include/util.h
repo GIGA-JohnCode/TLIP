@@ -7,3 +7,5 @@ bool int_in_range(int value, int min_value, int max_value);
 void show_error(const char *message);
 void alert(const char *type, const char *format, ...);
 int evaluate_path(char *path);
+bool get_duplicate_path(char* output_path, char* input_path);
+bool confirm(const char *format, ...);
