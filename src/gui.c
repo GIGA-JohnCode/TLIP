@@ -56,7 +56,6 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *input_browse_button = gtk_button_new_with_label("Browse");
                     g_signal_connect(input_browse_button, "clicked", G_CALLBACK(on_input_browse_clicked), NULL);
 
-            //GtkWidget *dimension_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
             GtkWidget *dimension_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 55);
                 GtkWidget *width_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                     GtkWidget *width_info_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -89,10 +88,17 @@ static void on_activate(GtkApplication *app)
                     g_signal_connect(output_browse_button, "clicked", G_CALLBACK(on_output_browse_clicked), NULL);
 
             GtkWidget *hints_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-                GtkWidget *hint_0 = gtk_label_new("HINTS");
+                GtkWidget *hint_0 = gtk_label_new(NULL);
+                    gtk_label_set_markup(GTK_LABEL(hint_0), "<b>HINTS</b>");
                 GtkWidget *hint_1 = gtk_label_new("1. Leaving Width/Height/Size field/s empty means current value/s will be used.");
+                    gtk_label_set_xalign(GTK_LABEL(hint_1), 0.0);
+                    gtk_widget_set_halign(hint_1, GTK_ALIGN_START);
                 GtkWidget *hint_2 = gtk_label_new("2. Input 0(zero) in size field to remove size limit during encoding.");
+                    gtk_label_set_xalign(GTK_LABEL(hint_2), 0.0);
+                    gtk_widget_set_halign(hint_2, GTK_ALIGN_START);
                 GtkWidget *hint_3 = gtk_label_new("3. Leaving the 'save to' field empty will make a duplicate.");
+                    gtk_label_set_xalign(GTK_LABEL(hint_3), 0.0);
+                    gtk_widget_set_halign(hint_3, GTK_ALIGN_START);
 
             GtkWidget *process_button = gtk_button_new_with_label("Process");
                 g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
