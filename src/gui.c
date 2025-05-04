@@ -104,55 +104,48 @@ static void on_activate(GtkApplication *app)
                 g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
 
 
+        gtk_window_set_child(GTK_WINDOW(window), main_box);
+            gtk_box_append(GTK_BOX(main_box), input_box);
+                gtk_box_append(GTK_BOX(input_box), input_label);
+                gtk_box_append(GTK_BOX(input_box), input_file_entry);
+                gtk_box_append(GTK_BOX(input_box), input_browse_button);
+
+            gtk_box_append(GTK_BOX(main_box), dimension_box);
+                gtk_box_append(GTK_BOX(dimension_box), width_box);
+                    gtk_box_append(GTK_BOX(width_box), width_info_box);
                         gtk_box_append(GTK_BOX(width_info_box), width_info_label_static);
                         gtk_box_append(GTK_BOX(width_info_box), width_info_label);
-
+                    gtk_box_append(GTK_BOX(width_box), width_entry_box);
                         gtk_box_append(GTK_BOX(width_entry_box), width_label);
                         gtk_box_append(GTK_BOX(width_entry_box), width_entry);
-
+                gtk_box_append(GTK_BOX(dimension_box), height_box);
+                    gtk_box_append(GTK_BOX(height_box), height_info_box);
                         gtk_box_append(GTK_BOX(height_info_box), height_info_label_static);
                         gtk_box_append(GTK_BOX(height_info_box), height_info_label);
-
+                    gtk_box_append(GTK_BOX(height_box), height_entry_box);
                         gtk_box_append(GTK_BOX(height_entry_box), height_label);
                         gtk_box_append(GTK_BOX(height_entry_box), height_entry);
 
-                    gtk_box_append(GTK_BOX(height_box), height_info_box);
-                    gtk_box_append(GTK_BOX(height_box), height_entry_box);
+            gtk_box_append(GTK_BOX(main_box), size_info_box);
+                gtk_box_append(GTK_BOX(size_info_box), size_info_label_static);
+                gtk_box_append(GTK_BOX(size_info_box), size_info_label);
 
-                    gtk_box_append(GTK_BOX(width_box), width_info_box);
-                    gtk_box_append(GTK_BOX(width_box), width_entry_box);
+            gtk_box_append(GTK_BOX(main_box), size_box);
+                gtk_box_append(GTK_BOX(size_box), size_label);
+                gtk_box_append(GTK_BOX(size_box), size_entry);
 
+            gtk_box_append(GTK_BOX(main_box), output_box);
+                gtk_box_append(GTK_BOX(output_box), output_label);
+                gtk_box_append(GTK_BOX(output_box), output_file_entry);
+                gtk_box_append(GTK_BOX(output_box), output_browse_button);
+
+            gtk_box_append(GTK_BOX(main_box), hints_box);
                 gtk_box_append(GTK_BOX(hints_box), hint_0);
                 gtk_box_append(GTK_BOX(hints_box), hint_1);
                 gtk_box_append(GTK_BOX(hints_box), hint_2);
                 gtk_box_append(GTK_BOX(hints_box), hint_3);
 
-                gtk_box_append(GTK_BOX(output_box), output_label);
-                gtk_box_append(GTK_BOX(output_box), output_file_entry);
-                gtk_box_append(GTK_BOX(output_box), output_browse_button);
-
-                gtk_box_append(GTK_BOX(size_box), size_label);
-                gtk_box_append(GTK_BOX(size_box), size_entry);
-
-                gtk_box_append(GTK_BOX(size_info_box), size_info_label_static);
-                gtk_box_append(GTK_BOX(size_info_box), size_info_label);
-
-                gtk_box_append(GTK_BOX(dimension_box), width_box);
-                gtk_box_append(GTK_BOX(dimension_box), height_box);
-
-                gtk_box_append(GTK_BOX(input_box), input_label);
-                gtk_box_append(GTK_BOX(input_box), input_file_entry);
-                gtk_box_append(GTK_BOX(input_box), input_browse_button);
-
-            gtk_box_append(GTK_BOX(main_box), input_box);
-            gtk_box_append(GTK_BOX(main_box), dimension_box);
-            gtk_box_append(GTK_BOX(main_box), size_info_box);
-            gtk_box_append(GTK_BOX(main_box), size_box);
-            gtk_box_append(GTK_BOX(main_box), output_box);
-            gtk_box_append(GTK_BOX(main_box), hints_box);
             gtk_box_append(GTK_BOX(main_box), process_button);
-
-        gtk_window_set_child(GTK_WINDOW(window), main_box);
 
     gtk_window_present(GTK_WINDOW(window));
 }
