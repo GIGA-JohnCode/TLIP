@@ -2,8 +2,10 @@
 
 #include <gtk/gtk.h>
 #include <limits.h>
+#include <linux/limits.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 static GtkWidget *input_file_entry;
 static GtkWidget *width_info_label;
@@ -216,7 +218,9 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
     const char *width_str = gtk_editable_get_text(GTK_EDITABLE(width_entry));
     const char *height_str = gtk_editable_get_text(GTK_EDITABLE(height_entry));
     const char *size_str = gtk_editable_get_text(GTK_EDITABLE(size_entry));
-    const char *output_path = gtk_editable_get_text(GTK_EDITABLE(output_file_entry));
+    const char *temp_output_path = gtk_editable_get_text(GTK_EDITABLE(output_file_entry));
+    char output_path[PATH_MAX];
+    strcpy(output_path, temp_output_path);
 
     if (!input_path || input_path[0] == '\0')
     {
@@ -259,9 +263,6 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         target_size = 1024 * atoi(size_str);
     else
         target_size = SIZE_MAX;
-
-    if (!output_path && output_path[0] == '\0')
-        output_path = input_path;
 
     store_jpeg(palette, target_size, (char*)output_path, (char*)input_path);
 

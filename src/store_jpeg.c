@@ -96,7 +96,6 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
 
     if (!result || path_status == -1 || path_status == -2)
         get_duplicate_path(output_path, input_path);
-
     FILE *fptr = fopen(output_path, "wb");
     if (!fptr)
     {
