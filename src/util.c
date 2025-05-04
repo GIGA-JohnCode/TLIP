@@ -161,11 +161,13 @@ bool get_duplicate_path(char* output_path, char* input_path)
 {
     char base[PATH_MAX];
     char ext[20] = "";
+    char temp[PATH_MAX];
+    strcpy(temp, input_path);
 
-    char *dot = strrchr(input_path, '.');
+    char *dot = strrchr(temp, '.');
     strcpy(ext, dot);
     *dot = '\0';
-    strcpy(base, input_path);
+    strcpy(base, temp);
 
     int counter = 0;
     do
