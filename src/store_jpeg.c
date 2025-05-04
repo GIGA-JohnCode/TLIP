@@ -88,52 +88,30 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
 
 static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_path, char* input_path)
 {
-    char* dot = strrchr(output_path, '.');
-    if (!dot)
+    int path_status = evaluate_path(output_path);
+
+    bool result = true;
+    if (path_status == 1)
+        result = confirm("File: %s already exists.\nOverwrite?", output_path);
+
+    if (!result || path_status == -1 || path_status == -2)
+        get_duplicate_path(output_path, input_path);
+
+    FILE *fptr = fopen(output_path, "wb");
+    if (!fptr)
     {
-        show_error("Given path: %s doesn't have an extension.");
+        alert("ERROR", "File: %s could not be opened for writing.", output_path);
         return false;
     }
 
-    // To Do: make another param called default_path, check output_path validity
-    //        choose default_path if invalid
-    char unique_path[PATH_MAX];
-    strcpy(unique_path, output_path);
-
-    FILE *tester = NULL;
-    while ((tester = fopen(unique_path, "r")) != NULL)
-    {
-        fclose(tester);
-
-        char suffix[3] = {'_', 'a' + rand() % 26, '\0'};
-
-        char base_path[PATH_MAX];
-        memcpy(base_path, output_path, dot - output_path);
-        base_path[dot - output_path] = '\0';
-
-        char extension[PATH_MAX];
-        strcpy(extension, dot);
-
-        strcpy(unique_path, base_path);
-        strcat(unique_path, suffix);
-        strcat(unique_path, extension);
-    }
-
-    FILE *fp = fopen(unique_path, "wb");
-    if (!fp)
-    {
-        show_error("Could not open file for writing."); // To Do: can be more elaborate
-        return false;
-    }
-
-    if (fwrite(jpeg_buffer, 1, jpeg_size, fp) != jpeg_size)
+    if (fwrite(jpeg_buffer, 1, jpeg_size, fptr) != jpeg_size)
     {
         show_error("Could not write JPEG data");
-        fclose(fp);
+        fclose(fptr);
         return false;
     }
 
-    fclose(fp);
-    alert("SUCCESS", "File saved to: %s\n", unique_path);
+    fclose(fptr);
+    alert("SUCCESS", "File saved to: %s\n", output_path);
     return true;
 }

@@ -90,6 +90,7 @@ static void on_activate(GtkApplication *app)
                 GtkWidget *hint_0 = gtk_label_new("HINTS");
                 GtkWidget *hint_1 = gtk_label_new("1. Leaving Width/Height/Size field/s empty means current value/s will be used.");
                 GtkWidget *hint_2 = gtk_label_new("2. Input 0(zero) in size field to remove size limit during encoding.");
+                GtkWidget *hint_3 = gtk_label_new("3. Leaving the 'save to' field empty will make a duplicate.");
 
             GtkWidget *process_button = gtk_button_new_with_label("Process");
                 g_signal_connect(process_button, "clicked", G_CALLBACK(on_process_clicked), NULL);
@@ -116,6 +117,7 @@ static void on_activate(GtkApplication *app)
                 gtk_box_append(GTK_BOX(hints_box), hint_0);
                 gtk_box_append(GTK_BOX(hints_box), hint_1);
                 gtk_box_append(GTK_BOX(hints_box), hint_2);
+                gtk_box_append(GTK_BOX(hints_box), hint_3);
 
                 gtk_box_append(GTK_BOX(output_box), output_label);
                 gtk_box_append(GTK_BOX(output_box), output_file_entry);
@@ -261,7 +263,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
     if (!output_path && output_path[0] == '\0')
         output_path = input_path;
 
-    store_jpeg(palette, target_size, (char*)output_path), (char*)input_path;
+    store_jpeg(palette, target_size, (char*)output_path, (char*)input_path);
 
     free(palette->buffer);
     free(palette);

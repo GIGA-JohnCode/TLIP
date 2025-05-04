@@ -236,13 +236,9 @@ static bool show_confirm_dialog(GtkWindow *parent, const char *message)
 static void confirm_done_callback(GObject *source, GAsyncResult *result, gpointer user_data)
 {
     confirm_response_data *data = (confirm_response_data *)user_data;
-    gchar *response_id = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(source), result, NULL);
+    int button_index = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(source), result, NULL);
 
-    if (response_id && strcmp(response_id, "Yes") == 0)
-        *(data->response) = TRUE;
-    else
-        *(data->response) = FALSE;
+    *(data->response) = (button_index == 1);
 
-    g_free(response_id);
     g_main_loop_quit(data->loop);
 }

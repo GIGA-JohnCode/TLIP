@@ -71,7 +71,7 @@ int cli_main(void)
         return -1;
     }
 
-    printf("Enter output path (or press enter to use default: %s): ", input_path);
+    printf("Enter output path (or press enter to save as duplicate):\n");
     char output_path[PATH_MAX];
 
     if (!fgets(output_path, PATH_MAX, stdin))
