@@ -19,7 +19,7 @@ int cli_main(void)
     {
         printf("Enter image path: ");
         if (getline(&input_path, &line_buf_size, stdin) == -1)
-            show_error("Failed to read image path, please try again.");
+            alert("ERROR", "Failed to read image path, please try again.");
         else
             break;
     }
@@ -64,7 +64,7 @@ int cli_main(void)
 
     if (new_width == palette->width && new_height == palette->height && target_size == palette->original_size)
     {
-        show_error("Nothing to do.");
+        alert("ERROR", "Nothing to do.");
         free(palette->buffer);
         free(palette);
         free(input_path);
@@ -76,7 +76,7 @@ int cli_main(void)
 
     if (!fgets(output_path, PATH_MAX, stdin))
     {
-        show_error("Failed to read output path.");
+        alert("ERROR", "Failed to read output path.");
         free(palette->buffer);
         free(palette);
         free(input_path);

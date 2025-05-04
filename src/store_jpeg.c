@@ -21,7 +21,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path, char* input
 
     if (target_size < 0 || target_size > SIZE_MAX)
     {
-        show_error("Invalid size");
+        alert("ERROR", "Invalid size");
         return false;
     }
 
@@ -57,7 +57,7 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path, char* input
         quality -= 5;
     }
     if (failed)
-        show_error("Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
+        alert("ERROR", "Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
     bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path, input_path);
     tjFree(jpeg_buffer);
     return result;
@@ -68,7 +68,7 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
     tjhandle compressor = tjInitCompress();
     if (!compressor)
     {
-        show_error(tjGetErrorStr2(NULL));
+        alert("ERROR", tjGetErrorStr2(NULL));
         return false;
     }
 
@@ -77,7 +77,7 @@ static bool encode_jpeg(rgb* palette, int quality, unsigned char **jpeg_buffer, 
 
     if (result != 0)
     {
-        show_error(tjGetErrorStr2(compressor));
+        alert("ERROR", tjGetErrorStr2(compressor));
         tjFree(*jpeg_buffer);
         tjDestroy(compressor);
         return false;
@@ -105,7 +105,7 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
 
     if (fwrite(jpeg_buffer, 1, jpeg_size, fptr) != jpeg_size)
     {
-        show_error("Could not write JPEG data");
+        alert("ERROR", "Could not write JPEG data");
         fclose(fptr);
         return false;
     }

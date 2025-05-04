@@ -12,7 +12,7 @@ bool resize(rgb* palette, int new_width, int new_height)
 
     if (new_width < 1 || new_height < 1)
     {
-        show_error("Invalid dimensions.");
+        alert("ERROR", "Invalid dimensions.");
         return false;
     }
 
@@ -22,7 +22,7 @@ bool resize(rgb* palette, int new_width, int new_height)
     byte *temp_buffer = (byte*)malloc(new_width * new_height * components);
     if (!temp_buffer)
     {
-        show_error("Memory allocation failed.");
+        alert("ERROR", "Memory allocation failed.");
         return false;
     }
 

@@ -19,7 +19,7 @@ rgb* load_jpeg(const char *input_path)
     tjhandle decompressor = tjInitDecompress();
     if (!decompressor)
     {
-        show_error(tjGetErrorStr2(NULL));
+        alert("ERROR", tjGetErrorStr2(NULL));
         free(image->buffer);
         free(image);
         return NULL;
@@ -50,14 +50,14 @@ static jpeg* read_jpeg(const char *input_path)
     jpeg *image = (jpeg*)malloc(sizeof(jpeg));
     if (!image)
     {
-        show_error("Memory allocation failed.");
+        alert("ERROR", "Memory allocation failed.");
         return NULL;
     }
 
     FILE *fptr = fopen(input_path, "rb");
     if (!fptr)
     {
-        show_error("Failed to open image at given path.");
+        alert("ERROR", "Failed to open image at given path.");
         free(image);
         return NULL;
     }
@@ -69,7 +69,7 @@ static jpeg* read_jpeg(const char *input_path)
     image->buffer = (byte*)malloc(sizeof(byte) * image->size);
     if (!image->buffer)
     {
-        show_error("Memory allocation failed.");
+        alert("ERROR", "Memory allocation failed.");
         free(image);
         fclose(fptr);
         return NULL;
@@ -77,7 +77,7 @@ static jpeg* read_jpeg(const char *input_path)
 
     if (fread(image->buffer, 1, image->size, fptr) != image->size)
     {
-        show_error("Failed to read image at given path.");
+        alert("ERROR", "Failed to read image at given path.");
         free(image);
         fclose(fptr);
         return NULL;
@@ -92,7 +92,7 @@ static bool parse_jpeg(jpeg* image, tjhandle decompressor)
     if (tjDecompressHeader3(decompressor, image->buffer, image->size,
        &(image->width), &(image->height), &(image->subsamp), &(image->colorspace)) < 0)
     {
-        show_error(tjGetErrorStr2(decompressor));
+        alert("ERROR", tjGetErrorStr2(decompressor));
         return false;
     }
     return true;
@@ -103,7 +103,7 @@ static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
     rgb* palette = (rgb*)malloc(sizeof(rgb));
     if (!palette)
     {
-        show_error("Memory allocation failed.");
+        alert("ERROR", "Memory allocation failed.");
         return NULL;
     }
 
@@ -115,7 +115,7 @@ static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
     palette->buffer = (byte*)malloc(palette->width * palette->height * palette->components);
     if (!palette->buffer)
     {
-        show_error("Memory allocation failed.");
+        alert("ERROR", "Memory allocation failed.");
         free(palette);
         return NULL;
     }
@@ -123,7 +123,7 @@ static rgb* extract_rgb(jpeg* image, tjhandle decompressor)
     if (tjDecompress2(decompressor, image->buffer, image->size,
         palette->buffer, palette->width, 0, palette->height, TJPF_RGB, TJFLAG_ACCURATEDCT) < 0)
     {
-        show_error(tjGetErrorStr2(decompressor));
+        alert("ERROR", tjGetErrorStr2(decompressor));
         free(palette->buffer);
         free(palette);
         return NULL;

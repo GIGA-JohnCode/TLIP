@@ -86,11 +86,6 @@ int get_int(const char *prompt)
     return value;
 }
 
-void show_error(const char *message)
-{
-    alert("ERROR", "%s", message);
-}
-
 void alert(const char *type, const char *format, ...)
 {
     char message[ALERT_MAX];

@@ -224,7 +224,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
 
     if (!input_path || input_path[0] == '\0')
     {
-        show_error("Please select an input file");
+        alert("ERROR", "Please select an input file");
         return;
     }
 
