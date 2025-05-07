@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 int cli_main(void)
 {
@@ -41,25 +40,12 @@ int cli_main(void)
     int new_width = get_int("Enter new width: ");
     if (new_width == INT_MIN)
         new_width = palette->width;
+
     printf("Current height: %i px (Press Enter to keep current height)\n", palette->height);
     int new_height = get_int("Enter new height: ");
     if (new_height == INT_MIN)
         new_height = palette->height;
 
-    bool resized = false;
-    if (new_width != palette->width || new_height != palette->height)
-    {
-        resized = true;
-        if (!resize(palette, new_width, new_height))
-        {
-            free(palette->buffer);
-            free(palette);
-            free(input_path);
-            return -1;
-        }
-    }
-
-    srand(time(NULL));
     printf("Current size: %.1f KB (Press Enter to keep current size or 0 to have no limit)\n", palette->original_size / 1024.0);
     size_t target_size = get_int("Enter max jpeg size in KB: ");
     if (target_size == INT_MIN)
@@ -67,9 +53,17 @@ int cli_main(void)
     else
         target_size *= 1024;
 
-    if (resized == false && target_size == palette->original_size)
+    if (new_width == palette->width && new_height == palette->height && target_size == palette->original_size)
     {
         alert("ERROR", "Nothing to do.");
+        free(palette->buffer);
+        free(palette);
+        free(input_path);
+        return -1;
+    }
+
+    if (!resize(palette, new_width, new_height))
+    {
         free(palette->buffer);
         free(palette);
         free(input_path);

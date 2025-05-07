@@ -6,6 +6,7 @@
 
 bool resize(rgb* palette, int new_width, int new_height)
 {
+    alert("giga", "entered resize(), %i\n", new_width);
     int old_width = palette->width;
     int old_height = palette->height;
     int components = palette->components;
