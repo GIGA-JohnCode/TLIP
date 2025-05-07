@@ -111,6 +111,6 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     }
 
     fclose(fptr);
-    alert("SUCCESS", "File saved to: %s\n", output_path);
+    alert("SUCCESS", "File saved to: %s", output_path);
     return true;
 }

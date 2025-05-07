@@ -46,12 +46,17 @@ int cli_main(void)
     if (new_height == INT_MIN)
         new_height = palette->height;
 
-    if (!resize(palette, new_width, new_height))
+    bool resized = false;
+    if (new_width != palette->width || new_height != palette->height)
     {
-        free(palette->buffer);
-        free(palette);
-        free(input_path);
-        return -1;
+        resized = true;
+        if (!resize(palette, new_width, new_height))
+        {
+            free(palette->buffer);
+            free(palette);
+            free(input_path);
+            return -1;
+        }
     }
 
     srand(time(NULL));
@@ -62,7 +67,7 @@ int cli_main(void)
     else
         target_size *= 1024;
 
-    if (new_width == palette->width && new_height == palette->height && target_size == palette->original_size)
+    if (resized == false && target_size == palette->original_size)
     {
         alert("ERROR", "Nothing to do.");
         free(palette->buffer);

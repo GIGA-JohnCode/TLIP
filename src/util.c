@@ -96,7 +96,7 @@ void alert(const char *type, const char *format, ...)
     va_end(args);
 
     if (cli_mode)
-        fprintf(stderr, "%s: %s", type, message);
+        fprintf(stderr, "%s: %s\n", type, message);
     else
         show_alert_dialog(main_window, type, message);
 }
