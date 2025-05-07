@@ -6,7 +6,6 @@
 
 bool resize(rgb* palette, int new_width, int new_height)
 {
-    alert("giga", "entered resize(), %i\n", new_width);
     int old_width = palette->width;
     int old_height = palette->height;
     int components = palette->components;
@@ -27,8 +26,8 @@ bool resize(rgb* palette, int new_width, int new_height)
         return false;
     }
 
-    float x_ratio = (float)(old_width - 1) / (new_width - 1);
-    float y_ratio = (float)(old_height - 1) / (new_height - 1);
+    float x_ratio = (new_width == 1) ? old_width : (float)(old_width - 1) / (new_width - 1);
+    float y_ratio = (new_height == 1) ? old_height : (float)(old_height - 1) / (new_height - 1);
 
     for (int y = 0; y < new_height; y++)
     {
@@ -36,7 +35,6 @@ bool resize(rgb* palette, int new_width, int new_height)
         {
             float src_x = x * x_ratio;
             float src_y = y * y_ratio;
-
             int x1 = (int)src_x;
             int x2 = (x1 == old_width - 1)? x1 : (x1 + 1);
             int y1 = (int)src_y;
@@ -65,7 +63,6 @@ bool resize(rgb* palette, int new_width, int new_height)
             }
         }
     }
-
         free(palette->buffer);
         palette->buffer = temp_buffer;
         palette->width = new_width;
