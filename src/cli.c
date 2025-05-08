@@ -178,7 +178,7 @@ static void fill_params(params *inputs)
         if (len > 0 && input_path[len - 1] == '\n')
             input_path[len - 1] = '\0';
 
-        inputs.img_paths = get_img_path_list(input_path);
+        get_img_path_list(&inputs, input_path);
     }
 
     int temp;
