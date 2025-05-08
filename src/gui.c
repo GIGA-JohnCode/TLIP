@@ -191,17 +191,18 @@ static void update_image_info(int width, int height, size_t file_size)
     gtk_label_set_text(GTK_LABEL(size_info_label), size_text);
 }
 
+// using dialog open instead of save functions because we don't want overwrite warnings
 static void on_output_browse_clicked(GtkButton *button, gpointer user_data)
 {
     GtkFileDialog *dialog = gtk_file_dialog_new();
     gtk_file_dialog_set_title(dialog, "Save Image");
-    gtk_file_dialog_save(dialog, GTK_WINDOW(main_window), NULL, output_file_selected, NULL);
+    gtk_file_dialog_open(dialog, GTK_WINDOW(main_window), NULL, output_file_selected, NULL);
     g_object_unref(dialog);
 }
 
 static void output_file_selected(GObject *source, GAsyncResult *res, gpointer user_data)
 {
-    GFile *file = gtk_file_dialog_save_finish(GTK_FILE_DIALOG(source), res, NULL);
+    GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), res, NULL);
     if (file)
     {
         char *path = g_file_get_path(file);
