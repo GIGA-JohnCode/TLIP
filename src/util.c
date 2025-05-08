@@ -14,6 +14,14 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#ifdef _WIN32
+    #include <direct.h>
+    #define mkdir(path, mode) _mkdir(path)
+#else
+    #include <sys/stat.h>
+    #include <sys/types.h>
+#endif
+
 #define ALERT_MAX 8192
 #define RETRIES_MAX 100
 
@@ -181,6 +189,51 @@ bool get_duplicate_path(char* output_path, char* input_path)
     }
     while (counter < RETRIES_MAX);
     return false;
+}
+
+bool get_duplicate_dir(char* output_dir)
+{
+    char temp[PATH_MAX];
+    strcpy(temp, output_dir);
+
+    int counter = 0;
+    do
+    {
+        snprintf(output_dir, PATH_MAX, "%s(%d)", temp, ++counter);
+        DIR *dir = opendir(output_dir);
+        if (!dir)
+            return true;
+        closedir(dir);
+    }
+    while (counter < RETRIES_MAX);
+    return false;
+}
+
+bool mkdir_p(const char *path)
+{
+    char temp[PATH_MAX];
+    size_t len = strlen(path);
+    if (len >= PATH_MAX)
+        return false;
+
+    strcpy(temp, path);
+
+    for (char *p = temp + 1; *p; p++)
+    {
+        if (*p == PATH_SEP)
+        {
+            *p = '\0';
+            if (access(temp, F_OK) != 0)
+                if (mkdir(temp, 0755) == -1)
+                    return false;
+            *p = PATH_SEP;
+        }
+    }
+
+    if (access(temp, F_OK) != 0 && mkdir(temp, 0755) == -1)
+        return false;
+
+    return true;
 }
 
 bool confirm(const char *format, ...)

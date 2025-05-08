@@ -9,7 +9,8 @@
 #include <stdbool.h>
 
 extern bool cli_mode;
+extern bool individual_input;
 extern GtkWindow *main_window;
 
-int cli_main(void);
+int cli_main(int argc, char *argv[]);
 int gui_main(void);

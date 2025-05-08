@@ -4,6 +4,14 @@
 
 typedef unsigned char byte;
 
+typedef struct {
+    char **img_paths;
+    int path_count;
+    int width;
+    int height;
+    size_t target_size;
+} params;
+
 typedef struct
 {
     byte *buffer;

@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
     else if (argc == 2 && !strcasecmp(argv[1], "--cli")) // strcasecmp() returns 0 on match
     {
         cli_mode = true;
-        return cli_main();
+        return cli_main(argc, argv);
     }
     else
     {

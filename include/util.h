@@ -14,3 +14,5 @@ void alert(const char *type, const char *format, ...);
 int evaluate_path(char *path);
 bool get_duplicate_path(char* output_path, char* input_path);
 bool confirm(const char *format, ...);
+bool get_duplicate_dir(char* output_dir);
+bool mkdir_p(const char *path);
