@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #define ALERT_MAX 8192
 #define RETRIES_MAX 100
@@ -125,31 +126,35 @@ static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer 
 int evaluate_path(char *path)
 {
     if (path[0] == '\0' || path[0] == '\n')
-        return -2;
-    FILE *file = fopen(path, "r");
-    if (file)
+        return -2; // user chose not to enter path
+
+    struct stat s;
+    if (stat(path, &s) == -1)
     {
-        fclose(file);
-        return 1;
+        char dir_path[PATH_MAX];
+        strcpy(dir_path, path);
+        char *last_slash = strrchr(dir_path, PATH_SEP);
+        if (last_slash)
+            *last_slash = '\0';
+        else
+            strcpy(dir_path, "."); // handles case when user wants to create new file in current directory
+
+        DIR *dir = opendir(dir_path);
+        if (!dir)
+            return -1; // path was garbage
+        else
+        {
+            closedir(dir);
+            return 0; // file doesn't yet exists but can be created
+        }
     }
 
-    errno = 0;
-    char dir_path[PATH_MAX];
-    strcpy(dir_path, path);
-    char *last_slash = strrchr(dir_path, '/');
-    if (last_slash)
-        *last_slash = '\0';
-    else
-        strcpy(dir_path, ".");
+    if (S_ISREG(s.st_mode))
+        return 1; // file exists
+    if (S_ISDIR(s.st_mode))
+        return 2; // directory exists
 
-    DIR *dir = opendir(dir_path);
-    if (!dir)
-        return -1;
-    else
-    {
-        closedir(dir);
-        return 0;
-    }
+    return INT_MIN; // should never really reach here, but compiler just won't shut up
 }
 
 bool get_duplicate_path(char* output_path, char* input_path)
