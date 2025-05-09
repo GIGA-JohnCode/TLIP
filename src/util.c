@@ -110,27 +110,6 @@ void alert(const char *type, const char *format, ...)
         show_alert_dialog(main_window, type, message);
 }
 
-static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message)
-{
-    GtkAlertDialog *dialog = gtk_alert_dialog_new("%s", type);
-    gtk_alert_dialog_set_detail(dialog, message);
-    gtk_alert_dialog_set_buttons(dialog, (const char*[]){"OK", NULL});
-    gtk_alert_dialog_set_modal(dialog, TRUE);
-
-    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
-    gtk_alert_dialog_choose(dialog, parent, NULL, (GAsyncReadyCallback)alert_done_callback, loop);
-    g_main_loop_run(loop);
-
-    g_main_loop_unref(loop);
-    g_object_unref(dialog);
-}
-
-static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data)
-{
-    GMainLoop *loop = (GMainLoop *)user_data;
-    g_main_loop_quit(loop);
-}
-
 int evaluate_path(char *path)
 {
     if (path[0] == '\0' || path[0] == '\n')
@@ -189,6 +168,46 @@ bool get_duplicate_path(char* output_path, char* input_path)
     }
     while (counter < RETRIES_MAX);
     return false;
+}
+
+void parse_args(int argc, char *argv[], params *inputs)
+{
+    if (argc <= 2)
+        return;
+
+    get_img_path_list(argv[2]);
+
+    if (argc > 3)
+    {
+        int temp;
+        if (strcmp(argv[3], ""))
+            input->width = INT_MIN;
+        else
+        {
+            temp = atoi(argv[3]);
+            input->width = (temp > 0) ? temp : -1;
+        }
+        if (argc > 4)
+        {
+            if (strcmp(argv[4], ""))
+                input->height = INT_MIN;
+            else
+            {
+                temp = atoi(argv[4]);
+                input->height = (temp > 0) ? temp : -1;
+            }
+            if (argc > 5)
+            {
+                if (strcmp(argv[5], ""))
+                    input->target_size = INT_MIN;
+                else
+                {
+                    temp = atoi(argv[5]);
+                    input->target_size = (temp > 0) ? temp : -1;
+                }
+            }
+        }
+    }
 }
 
 bool get_duplicate_dir(char* output_dir)
@@ -262,6 +281,27 @@ bool confirm(const char *format, ...)
     }
     else
         return show_confirm_dialog(main_window, message);
+}
+
+static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message)
+{
+    GtkAlertDialog *dialog = gtk_alert_dialog_new("%s", type);
+    gtk_alert_dialog_set_detail(dialog, message);
+    gtk_alert_dialog_set_buttons(dialog, (const char*[]){"OK", NULL});
+    gtk_alert_dialog_set_modal(dialog, TRUE);
+
+    GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+    gtk_alert_dialog_choose(dialog, parent, NULL, (GAsyncReadyCallback)alert_done_callback, loop);
+    g_main_loop_run(loop);
+
+    g_main_loop_unref(loop);
+    g_object_unref(dialog);
+}
+
+static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data)
+{
+    GMainLoop *loop = (GMainLoop *)user_data;
+    g_main_loop_quit(loop);
 }
 
 static bool show_confirm_dialog(GtkWindow *parent, const char *message)

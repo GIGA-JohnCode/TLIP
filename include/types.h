@@ -9,7 +9,7 @@ typedef struct {
     int path_count;
     int width;
     int height;
-    size_t target_size;
+    ssize_t target_size;
 } params;
 
 typedef struct
