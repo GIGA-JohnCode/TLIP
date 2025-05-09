@@ -26,6 +26,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data);
 
 int gui_main(void)
 {
+    individual_input = false;
     GtkApplication * app = gtk_application_new("com.example.tlip", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
 
@@ -258,7 +259,7 @@ static void on_process_clicked(GtkButton *button, gpointer user_data)
         return;
     }
 
-    size_t target_size;
+    ssize_t target_size;
     if (size_str && size_str[0] != '\0')
         target_size = 1024 * atoi(size_str);
     else

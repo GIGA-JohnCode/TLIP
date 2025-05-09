@@ -18,13 +18,14 @@ int cli_main(int argc, char *argv[])
     inputs.width = -1;
     inputs.height = -1;
     inputs.target_size = -1;
-    inputs.one_by_one = false;
+
+    individual_input = false;
 
     parse_args(argc, argv, &inputs);
     fill_params(&inputs);
 
     char output_dir[PATH_MAX];
-    if (!inputs.one_by_one && inputs.path_count > 1)
+    if (!individual_input && inputs.path_count > 1)
     {
         printf("Enter directory path where you want to store output files.\n");
         printf("Alternatively press Enter to create & select tlip_output subdirectory in the input directory.\n");
@@ -37,6 +38,7 @@ int cli_main(int argc, char *argv[])
                 return -1;
             }
             size_t len = strlen(output_dir);
+            
             if (len == 1 && output_dir[len - 1] == '\n')
             {
                 strcpy(output_dir, argv[2]);
@@ -88,7 +90,7 @@ int cli_main(int argc, char *argv[])
         else
             printf("Done.\n");
 
-        if (inputs.one_by_one || inputs.path_count == 1)
+        if (individual_input || inputs.path_count == 1)
         {
             printf("Current width: %i px (Press Enter to keep current width)\n", palette->width);
             inputs.width = get_int("Enter new width: ");
@@ -106,7 +108,7 @@ int cli_main(int argc, char *argv[])
             alert("SKIPPED", "Nothing to do.");
             free(palette->buffer);
             free(palette);
-            if (inputs.one_by_one)
+            if (individual_input)
                 continue;
             else
                 break;
@@ -133,7 +135,7 @@ int cli_main(int argc, char *argv[])
             image_name = input_path;
 
         char output_path[PATH_MAX];
-        if (inputs.one_by_one || inputs.path_count == 1)
+        if (individual_input || inputs.path_count == 1)
         {
             printf("Enter output path (or press enter to save as duplicate):\n");
             if (!fgets(output_path, PATH_MAX, stdin))
@@ -162,7 +164,7 @@ int cli_main(int argc, char *argv[])
 static void fill_params(params *inputs)
 {
     char input_path[PATH_MAX];
-    while (inputs.img_paths == NULL)
+    while (inputs->img_paths == NULL)
     {
         printf("Enter image path or directory: ");
         if (!fgets(input_path, PATH_MAX, stdin))
@@ -174,34 +176,34 @@ static void fill_params(params *inputs)
         if (len > 0 && input_path[len - 1] == '\n')
             input_path[len - 1] = '\0';
 
-        get_img_path_list(&inputs, input_path);
+        get_img_path_list(inputs, input_path);
     }
 
-    if (inputs.path_count > 1 && confirm("Manual enter processing parameters for each image?"))
-        inputs.one_by_one = true;
-    if (!inputs.one_by_one && inputs.path_count > 1)
+    if (inputs->path_count > 1 && confirm("Manually enter processing parameters for each image?"))
+        individual_input = true;
+    if (!individual_input && inputs->path_count > 1)
     {
         int temp;
-        while (inputs.width == -1)
+        while (inputs->width == -1)
         {
             printf("Press Enter to keep current width\n");
             temp = get_int("New width: ");
             if (int_in_range(temp, 1, INT_MAX) || temp == INT_MIN)
-                inputs.width = temp;
+                inputs->width = temp;
         }
-        while (inputs.height == -1)
+        while (inputs->height == -1)
         {
             printf("Press Enter to keep current height\n");
             temp = get_int("New height: ");
             if (int_in_range(temp, 1, INT_MAX) || temp == INT_MIN)
-                inputs.height = temp;
+                inputs->height = temp;
         }
-        while (inputs.target_size == -1)
+        while (inputs->target_size == -1)
         {
             printf("Press Enter to keep current size or 0 to have no limit\n");
             temp = get_int("target_size: ");
             if (int_in_range(temp, 0, INT_MAX) || temp == INT_MIN)
-                inputs.target_size = temp;
+                inputs->target_size = temp;
         }
     }
 }

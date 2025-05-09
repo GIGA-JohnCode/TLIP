@@ -16,12 +16,10 @@
 
 #ifdef _WIN32
     #include <direct.h>
-    #define chdir _chdir
     #define mkdir(path, mode) _mkdir(path)
 #else
     #include <sys/stat.h>
     #include <sys/types.h>
-    #include <unistd.h>
 #endif
 
 #define ALERT_MAX 8192
@@ -177,42 +175,42 @@ void parse_args(int argc, char *argv[], params *inputs)
     if (argc <= 2)
         return;
 
-    get_img_path_list(argv[2]);
+    get_img_path_list(inputs, argv[2]);
 
     if (argc > 3)
     {
         int temp;
         if (strcmp(argv[3], ""))
-            input->width = INT_MIN;
+            inputs->width = INT_MIN;
         else
         {
             temp = atoi(argv[3]);
-            input->width = (temp > 0) ? temp : -1;
+            inputs->width = (temp > 0) ? temp : -1;
         }
         if (argc > 4)
         {
             if (strcmp(argv[4], ""))
-                input->height = INT_MIN;
+                inputs->height = INT_MIN;
             else
             {
                 temp = atoi(argv[4]);
-                input->height = (temp > 0) ? temp : -1;
+                inputs->height = (temp > 0) ? temp : -1;
             }
             if (argc > 5)
             {
                 if (strcmp(argv[5], ""))
-                    input->target_size = INT_MIN;
+                    inputs->target_size = INT_MIN;
                 else
                 {
                     temp = atoi(argv[5]);
-                    input->target_size = (temp > 0) ? temp : -1;
+                    inputs->target_size = (temp > 0) ? temp : -1;
                 }
             }
         }
     }
 }
 
-void get_img_path_list(param *inputs, char *path)
+void get_img_path_list(params *inputs, char *path)
 {
     int path_status = evaluate_path(path);
 
@@ -237,7 +235,7 @@ void get_img_path_list(param *inputs, char *path)
         }
     }
 
-    if (path_status == 2)
+   if (path_status == 2)
     {
         DIR *dir = opendir(path);
         if (!dir)
@@ -246,19 +244,6 @@ void get_img_path_list(param *inputs, char *path)
             return;
         }
         struct dirent *entry;
-
-        // This snippet makes is_jpeg() work
-        char cwd[PATH_MAX];
-        if (getcwd(cwd, PATH_MAX) == NULL)
-        {
-            alert("ERROR", "getcwd() failed");
-            return;
-        }
-        if (chdir(path) != 0)
-        {
-            alert("ERROR", "chdir() failed");
-            return;
-        }
 
         int jpeg_count = 0;
         while ((entry = readdir(dir)) != NULL)
@@ -271,7 +256,7 @@ void get_img_path_list(param *inputs, char *path)
             return;
         }
 
-        inputs->img_paths = malloc(jpeg_count * sizeof(char*));
+        inputs->img_paths = malloc((jpeg_count + 1) * sizeof(char*));
         if (!(inputs->img_paths))
         {
             closedir(dir);
@@ -279,13 +264,12 @@ void get_img_path_list(param *inputs, char *path)
             return;
         }
         rewinddir(dir);
-        for (int i = 0; (entry = readdir(dir)) != NULL && i < jpeg_count; i++)
+        for (int i = 0; (entry = readdir(dir)) != NULL && i < jpeg_count;)
         {
-            if (is_jpeg(entry->d_name))
+            char entry_path[PATH_MAX];
+            snprintf(entry_path, PATH_MAX, "%s%c%s", path, PATH_SEP, entry->d_name);
+            if (is_jpeg(entry_path))
             {
-                char entry_path[PATH_MAX];
-                snprintf(entry_path, PATH_MAX, "%s%c%s", path, PATH_SEP, entry->d_name);
-
                 inputs->img_paths[i] = strdup(entry_path);
                 if (!inputs->img_paths[i])
                 {
@@ -294,14 +278,10 @@ void get_img_path_list(param *inputs, char *path)
                     alert("ERROR", "Memory allocation failed");
                     return;
                 }
+                i++;
             }
         }
-
-        if (chdir(cwd) != 0)
-        {
-            alert("ERROR", "chdir() failed");
-            return;
-        }
+        inputs->img_paths[jpeg_count] = NULL;
     }
 
     if (path_status == -2)
@@ -321,7 +301,11 @@ bool is_jpeg(char* path)
         return false;
 
     byte marker[2];
-    fread(marker, 1, 2, file);
+    if (fread(marker, 1, 2, file) != 2)
+    {
+        fclose(file);
+        return false;
+    }
     fclose(file);
 
     if (marker[0] == 0xFF && marker[1] == 0xD8)
@@ -334,7 +318,7 @@ void free_path_list(char **path_list)
     if (!path_list)
         return;
 
-    for (int i = 0; path_list[i], i++)
+    for (int i = 0; path_list[i]; i++)
         free(path_list[i]);
     free(path_list);
 }
