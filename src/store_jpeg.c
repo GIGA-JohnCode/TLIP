@@ -57,7 +57,8 @@ bool store_jpeg(rgb* palette, size_t target_size, char* output_path, char* input
         quality -= 5;
     }
     if (failed)
-        alert("ERROR", "Could not meet target size. Attempting to save image at quality: 30."); // To Do: add a way to convey more info
+        alert("WARNING", "Could not meet target size. Attempting to save image at quality: 30 (approx. %zu KB)",
+              jpeg_size / 1024);
     bool result = write_jpeg(jpeg_buffer, jpeg_size, output_path, input_path);
     tjFree(jpeg_buffer);
     return result;

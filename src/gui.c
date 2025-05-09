@@ -26,7 +26,6 @@ static void on_process_clicked(GtkButton *button, gpointer user_data);
 
 int gui_main(void)
 {
-    individual_input = false;
     GtkApplication * app = gtk_application_new("com.example.tlip", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
 

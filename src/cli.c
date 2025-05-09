@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+bool individual_input = true;
+
 static void fill_params(params *inputs);
 
 int cli_main(int argc, char *argv[])
@@ -19,13 +21,11 @@ int cli_main(int argc, char *argv[])
     inputs.height = -1;
     inputs.target_size = -1;
 
-    individual_input = false;
-
     parse_args(argc, argv, &inputs);
     fill_params(&inputs);
 
     char output_dir[PATH_MAX];
-    if (!individual_input && inputs.path_count > 1)
+    if (!individual_input)
     {
         printf("Enter directory path where you want to store output files.\n");
         printf("Alternatively press Enter to create & select tlip_output subdirectory in the input directory.\n");
@@ -38,10 +38,10 @@ int cli_main(int argc, char *argv[])
                 return -1;
             }
             size_t len = strlen(output_dir);
-            
+
             if (len == 1 && output_dir[len - 1] == '\n')
             {
-                strcpy(output_dir, argv[2]);
+                strcpy(output_dir, inputs.src);
                 len = strlen(output_dir);
                 if (output_dir[len - 2] == PATH_SEP)
                     output_dir[len - 2] = '\0';
@@ -53,25 +53,31 @@ int cli_main(int argc, char *argv[])
             else if (len > 0 && output_dir[len - 1] == '\n')
                 output_dir[len - 1] = '\0';
 
-            if (evaluate_path(output_dir) == 2)
+            int path_status = evaluate_path(output_dir);
+            if (path_status == 2)
             {
                 if (confirm("Any file/s in this directory with the same name & ext will be overwritten, are you sure?"))
                     break;
                 else if (confirm("Do you want to create a duplicate directory?"))
                 {
-                    if (!get_duplicate_dir(output_dir))
+                    if (get_duplicate_dir(output_dir))
+                        break;
+                    else
                         continue;
                 }
                 else
                     continue;
             }
 
-            if (mkdir_p(output_dir))
-                break;
-            else
-                continue;
+            if (path_status == -1)
+            {
+                if (mkdir_p(output_dir))
+                    break;
+                else
+                    continue;
+            }
         }
-        len = strlen(output_dir);
+        size_t len = strlen(output_dir);
         if (output_dir[len - 2] == PATH_SEP)
             output_dir[len - 2] = '\0';
     }
@@ -90,17 +96,24 @@ int cli_main(int argc, char *argv[])
         else
             printf("Done.\n");
 
-        if (individual_input || inputs.path_count == 1)
+        if (individual_input)
         {
-            printf("Current width: %i px (Press Enter to keep current width)\n", palette->width);
-            inputs.width = get_int("Enter new width: ");
-
-            printf("Current height: %i px (Press Enter to keep current height)\n", palette->height);
-            inputs.height = get_int("Enter new height: ");
-
-            printf("Current size: %.1f KB (Press Enter to keep current size or 0 to have no limit)\n",
-                    palette->original_size / 1024.0);
-            inputs.target_size = get_int("Enter max jpeg size in KB: ");
+            if (inputs.width == -1)
+            {
+                printf("Current width: %i px (Press Enter to keep current width)\n", palette->width);
+                inputs.width = get_int("Enter new width: ");
+            }
+            if (inputs.height == -1)
+            {
+                printf("Current height: %i px (Press Enter to keep current height)\n", palette->height);
+                inputs.height = get_int("Enter new height: ");
+            }
+            if (inputs.target_size == -1)
+            {
+                printf("Current size: %.1f KB (Press Enter to keep current size or 0 to have no limit)\n",
+                        palette->original_size / 1024.0);
+                inputs.target_size = get_int("Enter max jpeg size in KB: ");
+            }
         }
 
         if (inputs.width == INT_MIN && inputs.height == INT_MIN && inputs.target_size == INT_MIN)
@@ -133,9 +146,11 @@ int cli_main(int argc, char *argv[])
         char *image_name = strrchr(input_path, PATH_SEP);
         if (!image_name)
             image_name = input_path;
+        else
+            image_name++;
 
         char output_path[PATH_MAX];
-        if (individual_input || inputs.path_count == 1)
+        if (individual_input)
         {
             printf("Enter output path (or press enter to save as duplicate):\n");
             if (!fgets(output_path, PATH_MAX, stdin))
@@ -151,37 +166,36 @@ int cli_main(int argc, char *argv[])
         }
         else
             snprintf(output_path, PATH_MAX, "%s%c%s", output_dir, PATH_SEP, image_name);
-
         bool result = store_jpeg(palette, inputs.target_size, output_path, input_path);
         free(palette->buffer);
         free(palette);
         if (!result)
             printf("ERROR: %s couldn't be saved.", image_name);
     }
+    free_path_list(inputs.img_paths);
     return 0;
 }
 
 static void fill_params(params *inputs)
 {
-    char input_path[PATH_MAX];
     while (inputs->img_paths == NULL)
     {
         printf("Enter image path or directory: ");
-        if (!fgets(input_path, PATH_MAX, stdin))
+        if (!fgets(inputs->src, PATH_MAX, stdin))
         {
             fprintf(stderr, "Couldn't read input path");
             continue;
         }
-        size_t len = strlen(input_path);
-        if (len > 0 && input_path[len - 1] == '\n')
-            input_path[len - 1] = '\0';
+        size_t len = strlen(inputs->src);
+        if (len > 0 && inputs->src[len - 1] == '\n')
+            inputs->src[len - 1] = '\0';
 
-        get_img_path_list(inputs, input_path);
+        get_img_path_list(inputs);
     }
-
-    if (inputs->path_count > 1 && confirm("Manually enter processing parameters for each image?"))
-        individual_input = true;
-    if (!individual_input && inputs->path_count > 1)
+    //printf("%s %i\n", inputs->img_paths[0], inputs->path_count);
+    if (inputs->path_count > 1 && !confirm("Manually enter processing parameters for each image?"))
+        individual_input = false;
+    if (!individual_input)
     {
         int temp;
         while (inputs->width == -1)

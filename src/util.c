@@ -175,12 +175,29 @@ void parse_args(int argc, char *argv[], params *inputs)
     if (argc <= 2)
         return;
 
-    get_img_path_list(inputs, argv[2]);
+    if (argv[2][0] == '"')
+    {
+        char *quotation = strrchr(argv[2], '"');
+        if (quotation && quotation != argv[2])
+        {
+            *quotation = '\0';
+            strcpy(inputs->src, argv[2] + 1);
+        }
+        else
+        {
+            alert("ERROR", "Missing closing \" in argument");
+            return;
+        }
+    }
+    else
+        strcpy(inputs->src, argv[2]);
+
+    get_img_path_list(inputs);
 
     if (argc > 3)
     {
         int temp;
-        if (strcmp(argv[3], ""))
+        if (strcmp(argv[3], "") == 0)
             inputs->width = INT_MIN;
         else
         {
@@ -189,7 +206,7 @@ void parse_args(int argc, char *argv[], params *inputs)
         }
         if (argc > 4)
         {
-            if (strcmp(argv[4], ""))
+            if (strcmp(argv[4], "") == 0)
                 inputs->height = INT_MIN;
             else
             {
@@ -198,34 +215,32 @@ void parse_args(int argc, char *argv[], params *inputs)
             }
             if (argc > 5)
             {
-                if (strcmp(argv[5], ""))
+                if (strcmp(argv[5], "") == 0)
                     inputs->target_size = INT_MIN;
                 else
                 {
                     temp = atoi(argv[5]);
-                    inputs->target_size = (temp > 0) ? temp : -1;
+                    inputs->target_size = (temp >= 0) ? temp : -1;
                 }
             }
         }
     }
 }
 
-void get_img_path_list(params *inputs, char *path)
+void get_img_path_list(params *inputs)
 {
+    char *path = inputs->src;
     int path_status = evaluate_path(path);
-
     if (path_status == 1)
     {
         if (!is_jpeg(path))
             return;
-
-        inputs->img_paths = malloc(sizeof(char*));
+        inputs->img_paths = malloc(2 * sizeof(char*));
         if (!(inputs->img_paths))
         {
             alert("ERROR", "Memory allocation failed.");
             return;
         }
-
         inputs->img_paths[0] = strdup(path);
         if (!inputs->img_paths[0])
         {
@@ -233,9 +248,10 @@ void get_img_path_list(params *inputs, char *path)
             alert("ERROR", "Memory allocation failed.");
             return;
         }
+        inputs->img_paths[1] = NULL;
+        inputs->path_count = 1;
     }
-
-   if (path_status == 2)
+    else if (path_status == 2)
     {
         DIR *dir = opendir(path);
         if (!dir)
@@ -246,9 +262,13 @@ void get_img_path_list(params *inputs, char *path)
         struct dirent *entry;
 
         int jpeg_count = 0;
+        char entry_path[PATH_MAX];
         while ((entry = readdir(dir)) != NULL)
-            if (is_jpeg(entry->d_name))
+        {
+            snprintf(entry_path, PATH_MAX, "%s%c%s", path, PATH_SEP, entry->d_name);
+            if (is_jpeg(entry_path))
                 jpeg_count++;
+        }
         if (jpeg_count == 0)
         {
             closedir(dir);
@@ -266,7 +286,6 @@ void get_img_path_list(params *inputs, char *path)
         rewinddir(dir);
         for (int i = 0; (entry = readdir(dir)) != NULL && i < jpeg_count;)
         {
-            char entry_path[PATH_MAX];
             snprintf(entry_path, PATH_MAX, "%s%c%s", path, PATH_SEP, entry->d_name);
             if (is_jpeg(entry_path))
             {
@@ -282,16 +301,14 @@ void get_img_path_list(params *inputs, char *path)
             }
         }
         inputs->img_paths[jpeg_count] = NULL;
+        inputs->path_count = jpeg_count;
     }
-
-    if (path_status == -2)
+    else if (path_status == -2)
         alert("ERROR", "No path provided");
     else if (path_status == -1)
         alert("ERROR", "Invalid path: %s", path);
     else
         alert("ERROR", "Path is not a file or directory: %s", path);
-
-    return;
 }
 
 bool is_jpeg(char* path)
@@ -307,7 +324,7 @@ bool is_jpeg(char* path)
         return false;
     }
     fclose(file);
-
+    //printf("%s %02X %02X\n", path, );
     if (marker[0] == 0xFF && marker[1] == 0xD8)
         return true;
     return false;

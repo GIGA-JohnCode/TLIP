@@ -1,5 +1,6 @@
 #pragma once
 
+#include <linux/limits.h>
 #include <stddef.h>
 #include <stdio.h>
 
@@ -15,6 +16,7 @@ typedef unsigned char byte;
 #endif
 
 typedef struct {
+    char src[PATH_MAX];
     char **img_paths;
     int path_count;
     int width;
