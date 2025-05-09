@@ -10,6 +10,7 @@ typedef struct {
     int width;
     int height;
     size_t target_size;
+    bool one_by_one;
 } params;
 
 typedef struct
