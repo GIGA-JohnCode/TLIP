@@ -16,3 +16,7 @@ bool get_duplicate_path(char* output_path, char* input_path);
 bool confirm(const char *format, ...);
 bool get_duplicate_dir(char* output_dir);
 bool mkdir_p(const char *path);
+void parse_args(int argc, char *argv[], params *inputs);
+void get_img_path_list(param *inputs, char *path);
+bool is_jpeg(char* path);
+void free_path_list(char **path_list);

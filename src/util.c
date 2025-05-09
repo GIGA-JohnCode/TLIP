@@ -16,10 +16,12 @@
 
 #ifdef _WIN32
     #include <direct.h>
+    #define chdir _chdir
     #define mkdir(path, mode) _mkdir(path)
 #else
     #include <sys/stat.h>
     #include <sys/types.h>
+    #include <unistd.h>
 #endif
 
 #define ALERT_MAX 8192
@@ -208,6 +210,133 @@ void parse_args(int argc, char *argv[], params *inputs)
             }
         }
     }
+}
+
+void get_img_path_list(param *inputs, char *path)
+{
+    int path_status = evaluate_path(path);
+
+    if (path_status == 1)
+    {
+        if (!is_jpeg(path))
+            return;
+
+        inputs->img_paths = malloc(sizeof(char*));
+        if (!(inputs->img_paths))
+        {
+            alert("ERROR", "Memory allocation failed.");
+            return;
+        }
+
+        inputs->img_paths[0] = strdup(path);
+        if (!inputs->img_paths[0])
+        {
+            free_path_list(inputs->img_paths);
+            alert("ERROR", "Memory allocation failed.");
+            return;
+        }
+    }
+
+    if (path_status == 2)
+    {
+        DIR *dir = opendir(path);
+        if (!dir)
+        {
+            alert("ERROR", "Could not open directory: %s", path);
+            return;
+        }
+        struct dirent *entry;
+
+        // This snippet makes is_jpeg() work
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, PATH_MAX) == NULL)
+        {
+            alert("ERROR", "getcwd() failed");
+            return;
+        }
+        if (chdir(path) != 0)
+        {
+            alert("ERROR", "chdir() failed");
+            return;
+        }
+
+        int jpeg_count = 0;
+        while ((entry = readdir(dir)) != NULL)
+            if (is_jpeg(entry->d_name))
+                jpeg_count++;
+        if (jpeg_count == 0)
+        {
+            closedir(dir);
+            alert("ERROR", "No JPEG files found in directory: %s", path);
+            return;
+        }
+
+        inputs->img_paths = malloc(jpeg_count * sizeof(char*));
+        if (!(inputs->img_paths))
+        {
+            closedir(dir);
+            alert("ERROR", "Memory allocation failed.");
+            return;
+        }
+        rewinddir(dir);
+        for (int i = 0; (entry = readdir(dir)) != NULL && i < jpeg_count; i++)
+        {
+            if (is_jpeg(entry->d_name))
+            {
+                char entry_path[PATH_MAX];
+                snprintf(entry_path, PATH_MAX, "%s%c%s", path, PATH_SEP, entry->d_name);
+
+                inputs->img_paths[i] = strdup(entry_path);
+                if (!inputs->img_paths[i])
+                {
+                    free_path_list(inputs->img_paths);
+                    closedir(dir);
+                    alert("ERROR", "Memory allocation failed");
+                    return;
+                }
+            }
+        }
+
+        if (chdir(cwd) != 0)
+        {
+            alert("ERROR", "chdir() failed");
+            return;
+        }
+    }
+
+    if (path_status == -2)
+        alert("ERROR", "No path provided");
+    else if (path_status == -1)
+        alert("ERROR", "Invalid path: %s", path);
+    else
+        alert("ERROR", "Path is not a file or directory: %s", path);
+
+    return;
+}
+
+bool is_jpeg(char* path)
+{
+    FILE* file = fopen(path, "rb");
+    if (file == NULL)
+        return false;
+
+    byte marker[2];
+    fread(marker, 1, 2, file);
+    fclose(file);
+
+    if (marker[0] == 0xFF && marker[1] == 0xD8)
+        return true;
+    return false;
+}
+
+void free_path_list(char **path_list)
+{
+    if (!path_list)
+        return;
+
+    for (int i = 0; path_list[i], i++)
+        free(path_list[i]);
+    free(path_list);
 }
 
 bool get_duplicate_dir(char* output_dir)
