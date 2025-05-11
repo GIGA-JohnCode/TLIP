@@ -15,8 +15,10 @@
 typedef unsigned char byte;
 #endif
 
-typedef struct {
+typedef struct
+{
     char src[PATH_MAX];
+    char dest[PATH_MAX];
     char **img_paths;
     int path_count;
     int width;

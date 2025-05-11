@@ -92,12 +92,37 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     if (!cli_mode || individual_input)
     {
         int path_status = evaluate_path(output_path);
+        char output_dir[PATH_MAX];
+        if (path_status == 2)
+        {
+            strcpy(output_dir, output_path);
+            size_t len = strlen(output_dir);
+            if (output_dir[len - 2] == PATH_SEP)
+                output_dir[len - 2] = '\0';
+            char *image_name = strrchr(input_path, PATH_SEP);
+            if (!image_name)
+                image_name = input_path;
+            else
+                image_name++;
+            snprintf(output_path, PATH_MAX, "%s%c%s", output_dir, PATH_SEP, image_name);
+            path_status = evaluate_path(output_path);
+        }
 
         bool result = true;
         if (path_status == 1)
             result = confirm("File: %s already exists.\nOverwrite?", output_path);
 
-        if (!result || path_status == -1 || path_status == -2)
+        if (path_status == -1)
+        {
+            strcpy(output_dir, output_path);
+            char *last_sep = strrchr(output_dir, PATH_SEP);
+            *last_sep = '\0';
+
+            if (!mkdir_p(output_dir))
+                result = false;
+        }
+
+        if (!result || path_status == -2)
             get_duplicate_path(output_path, input_path);
     }
 

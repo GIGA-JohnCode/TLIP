@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
     #include <direct.h>
@@ -180,13 +179,7 @@ void parse_args(int argc, char *argv[], params *inputs)
 
     if (argv[2][0] == '"')
     {
-        char *quotation = strrchr(argv[2], '"');
-        if (quotation && quotation != argv[2])
-        {
-            *quotation = '\0';
-            strcpy(inputs->src, argv[2] + 1);
-        }
-        else
+        if (!unquote_cpy(inputs->src, argv[2]))
         {
             alert("ERROR", "Missing closing \" in argument");
             return;
@@ -225,9 +218,35 @@ void parse_args(int argc, char *argv[], params *inputs)
                     temp = atoi(argv[5]);
                     inputs->target_size = (temp >= 0) ? temp : -1;
                 }
+                if (argc > 6)
+                {
+                    if (argv[6][0] == '"')
+                    {
+                        if (!unquote_cpy(inputs->dest, argv[6]))
+                        {
+                            alert("ERROR", "Missing closing \" in argument");
+                            return;
+                        }
+                    }
+                    else
+                        strcpy(inputs->dest, argv[6]);
+                }
             }
         }
     }
+}
+
+bool unquote_cpy(char *path, char arg[])
+{
+    char *quotation = strrchr(arg, '"');
+    if (quotation && quotation != arg)
+    {
+        *quotation = '\0';
+        strcpy(path, arg + 1);
+        return true;
+    }
+    else
+        return false;
 }
 
 void get_img_path_list(params *inputs)
@@ -383,7 +402,7 @@ bool mkdir_p(const char *path)
 
     if (access(temp, F_OK) != 0 && mkdir(temp, 0755) == -1)
         return false;
-
+    printf("%s giga\n", path);
     return true;
 }
 
