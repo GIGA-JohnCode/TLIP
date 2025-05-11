@@ -381,6 +381,7 @@ bool get_duplicate_dir(char* output_dir)
 
 bool mkdir_p(const char *path)
 {
+    struct stat st;
     char temp[PATH_MAX];
     size_t len = strlen(path);
     if (len >= PATH_MAX)
@@ -394,15 +395,18 @@ bool mkdir_p(const char *path)
         {
             *p = '\0';
             if (access(temp, F_OK) != 0)
+            {
                 if (mkdir(temp, 0755) == -1)
                     return false;
+            }
+            else if (!(stat(temp, &st) == 0 && S_ISDIR(st.st_mode)))
+                return false;
             *p = PATH_SEP;
         }
     }
 
     if (access(temp, F_OK) != 0 && mkdir(temp, 0755) == -1)
         return false;
-    printf("%s giga\n", path);
     return true;
 }
 

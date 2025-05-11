@@ -111,7 +111,6 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
         bool result = true;
         if (path_status == 1)
             result = confirm("File: %s already exists.\nOverwrite?", output_path);
-
         if (path_status == -1)
         {
             strcpy(output_dir, output_path);

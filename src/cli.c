@@ -43,6 +43,10 @@ int cli_main(int argc, char *argv[])
                 else
                     continue;
             }
+
+            if (evaluate_path(output_dir) == 1)
+                alert("ERROR", "Invalid directory, a file already exists with the same name");
+            
             if (evaluate_path(output_dir) == -1 || evaluate_path(output_dir) == 0)
             {
                 if (mkdir_p(output_dir))
