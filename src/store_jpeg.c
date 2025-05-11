@@ -116,6 +116,12 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     }
 
     fclose(fptr);
-    alert("SUCCESS", "File saved to: %s", output_path);
+    if (individual_input)
+    {
+        if (confirm("File successfully saved to: %s\nDo you want to open it?", output_path))
+            view_image(output_path);
+    }
+    else
+        alert("SUCCESS", "File saved to: %s", output_path);
     return true;
 }

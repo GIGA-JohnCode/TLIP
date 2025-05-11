@@ -5,6 +5,7 @@
 #include <strings.h>
 
 bool cli_mode = false;
+bool individual_input = true;
 GtkWindow *main_window = NULL;
 
 int main(int argc, char* argv[])

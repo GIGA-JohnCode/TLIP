@@ -31,10 +31,13 @@ typedef struct
     GMainLoop *loop;
 } confirm_response_data;
 
+static char view_image_filename[PATH_MAX];
+
 static void alert_done_callback(GObject *source, GAsyncResult *result, gpointer user_data);
 static void show_alert_dialog(GtkWindow *parent, const char *type, const char *message);
 static void confirm_done_callback(GObject *source, GAsyncResult *result, gpointer user_data);
 static bool show_confirm_dialog(GtkWindow *parent, const char *message);
+static void on_view_image_activate(GtkApplication *app, gpointer user_data);
 
 bool int_in_range(int value, int min_value, int max_value)
 {
@@ -324,7 +327,6 @@ bool is_jpeg(char* path)
         return false;
     }
     fclose(file);
-    //printf("%s %02X %02X\n", path, );
     if (marker[0] == 0xFF && marker[1] == 0xD8)
         return true;
     return false;
@@ -467,3 +469,52 @@ static void confirm_done_callback(GObject *source, GAsyncResult *result, gpointe
 
     g_main_loop_quit(data->loop);
 }
+
+bool view_image(const char *filename)
+{
+    strncpy(view_image_filename, filename, PATH_MAX - 1);
+    view_image_filename[PATH_MAX - 1] = '\0';
+
+    GtkApplication *app = gtk_application_new("com.example.tlip.viewer", G_APPLICATION_NON_UNIQUE);
+
+    g_signal_connect(app, "activate", G_CALLBACK(on_view_image_activate), NULL);
+
+    int status = g_application_run(G_APPLICATION(app), 0, NULL);
+    g_object_unref(app);
+
+    return (status == 0);
+}
+
+static void on_view_image_activate(GtkApplication *app, gpointer user_data)
+{
+    GtkWidget *window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(window), view_image_filename);
+    gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
+
+    GtkWidget *scrolled = gtk_scrolled_window_new();
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+                                  GTK_POLICY_AUTOMATIC,
+                                  GTK_POLICY_AUTOMATIC);
+
+    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(view_image_filename, NULL);
+    if (!pixbuf)
+    {
+        alert("ERROR", "Failed to load image: %s", view_image_filename);
+        return;
+    }
+
+    GtkWidget *picture = gtk_picture_new();
+    GdkPaintable *paintable = GDK_PAINTABLE(gdk_texture_new_for_pixbuf(pixbuf));
+    gtk_picture_set_paintable(GTK_PICTURE(picture), paintable);
+    gtk_picture_set_can_shrink(GTK_PICTURE(picture), TRUE);
+    gtk_picture_set_content_fit(GTK_PICTURE(picture), GTK_CONTENT_FIT_CONTAIN);
+
+    g_object_unref(paintable);
+    g_object_unref(pixbuf);
+
+    gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), picture);
+    gtk_window_set_child(GTK_WINDOW(window), scrolled);
+    gtk_window_present(GTK_WINDOW(window));
+}
+
+

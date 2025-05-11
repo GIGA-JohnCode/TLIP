@@ -22,3 +22,4 @@ void parse_args(int argc, char *argv[], params *inputs);
 void get_img_path_list(params *inputs);
 bool is_jpeg(char* path);
 void free_path_list(char **path_list);
+bool view_image(const char *filename);
