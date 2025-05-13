@@ -10,3 +10,5 @@ obj/
 # Test images
 images/
 
+# Misc
+chat.json

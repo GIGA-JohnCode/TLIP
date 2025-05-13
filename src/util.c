@@ -174,33 +174,31 @@ bool get_duplicate_path(char* output_path, char* input_path)
 
 void parse_args(int argc, char *argv[], params *inputs)
 {
-    if (argc <= 2)
-        return;
-    if (argv[2][0] == '"')
+    int temp;
+    switch(argc)
     {
-        if (!unquote_cpy(inputs->src, argv[2]))
-        {
-            alert("ERROR", "Missing closing \" in argument");
-            return;
-        }
-    }
-    else
-        strcpy(inputs->src, argv[2]);
+        case 7:
+            if (argv[6][0] == '"')
+            {
+                if (!unquote_cpy(inputs->dest, argv[6]))
+                {
+                    alert("ERROR", "Missing closing \" in argument");
+                        return;
+                }
+            }
+            else
+                strcpy(inputs->dest, argv[6]);
 
-    get_img_path_list(inputs);
+        case 6:
+            if (strcmp(argv[5], "") == 0)
+                inputs->target_size = INT_MIN;
+            else
+            {
+                temp = atoi(argv[5]);
+                inputs->target_size = (temp >= 0) ? temp : -1;
+            }
 
-    if (argc > 3)
-    {
-        int temp;
-        if (strcmp(argv[3], "") == 0)
-            inputs->width = INT_MIN;
-        else
-        {
-            temp = atoi(argv[3]);
-            inputs->width = (temp > 0) ? temp : -1;
-        }
-        if (argc > 4)
-        {
+        case 5:
             if (strcmp(argv[4], "") == 0)
                 inputs->height = INT_MIN;
             else
@@ -208,30 +206,31 @@ void parse_args(int argc, char *argv[], params *inputs)
                 temp = atoi(argv[4]);
                 inputs->height = (temp > 0) ? temp : -1;
             }
-            if (argc > 5)
+
+        case 4:
+            if (strcmp(argv[3], "") == 0)
+                inputs->width = INT_MIN;
+            else
             {
-                if (strcmp(argv[5], "") == 0)
-                    inputs->target_size = INT_MIN;
-                else
+                temp = atoi(argv[3]);
+                inputs->width = (temp > 0) ? temp : -1;
+            }
+
+        case 3:
+            if (argv[2][0] == '"')
+            {
+                if (!unquote_cpy(inputs->src, argv[2]))
                 {
-                    temp = atoi(argv[5]);
-                    inputs->target_size = (temp >= 0) ? temp : -1;
-                }
-                if (argc > 6)
-                {
-                    if (argv[6][0] == '"')
-                    {
-                        if (!unquote_cpy(inputs->dest, argv[6]))
-                        {
-                            alert("ERROR", "Missing closing \" in argument");
-                            return;
-                        }
-                    }
-                    else
-                        strcpy(inputs->dest, argv[6]);
+                    alert("ERROR", "Missing closing \" in argument");
+                    return;
                 }
             }
-        }
+            else
+                strcpy(inputs->src, argv[2]);
+            get_img_path_list(inputs);
+
+        case 2:
+            return;
     }
 }
 
