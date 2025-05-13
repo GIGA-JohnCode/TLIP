@@ -176,7 +176,6 @@ void parse_args(int argc, char *argv[], params *inputs)
 {
     if (argc <= 2)
         return;
-
     if (argv[2][0] == '"')
     {
         if (!unquote_cpy(inputs->src, argv[2]))

@@ -38,11 +38,7 @@ rgb* load_jpeg(const char *input_path)
     free(image->buffer);
     free(image);
     tjDestroy(decompressor);
-
-    if (!palette)
-        return NULL;
-    else
-        return palette;
+    return palette;
 }
 
 static jpeg* read_jpeg(const char *input_path)

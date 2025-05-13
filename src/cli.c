@@ -46,7 +46,7 @@ int cli_main(int argc, char *argv[])
 
             if (evaluate_path(output_dir) == 1)
                 alert("ERROR", "Invalid directory, a file already exists with the same name");
-            
+
             if (evaluate_path(output_dir) == -1 || evaluate_path(output_dir) == 0)
             {
                 if (mkdir_p(output_dir))
@@ -72,8 +72,8 @@ int cli_main(int argc, char *argv[])
             {
                 strcpy(output_dir, inputs.src);
                 len = strlen(output_dir);
-                if (output_dir[len - 2] == PATH_SEP)
-                    output_dir[len - 2] = '\0';
+                if (output_dir[len - 1] == PATH_SEP)
+                    output_dir[len - 1] = '\0';
                 char temp[PATH_MAX];
                 strcpy(temp, output_dir);
                 if (!snprintf(output_dir, PATH_MAX, "%s%ctlip_output", temp, PATH_SEP))
@@ -177,8 +177,8 @@ int cli_main(int argc, char *argv[])
         else
         {
             size_t len = strlen(output_dir);
-            if (output_dir[len - 2] == PATH_SEP)
-                output_dir[len - 2] = '\0';
+            if (output_dir[len - 1] == PATH_SEP)
+                output_dir[len - 1] = '\0';
             snprintf(output_path, PATH_MAX, "%s%c%s", output_dir, PATH_SEP, image_name);
         }
         store_jpeg(palette, inputs.target_size, output_path, input_path);
