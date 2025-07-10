@@ -177,6 +177,16 @@ void parse_args(int argc, char *argv[], params *inputs)
     int temp;
     switch(argc)
     {
+        case 8:
+            if (strcasecmp(argv[7], "individual") == 0)
+                individual_input = true;
+            else if (strcasecmp(argv[7], "not-individual") == 0)
+                individual_input = false;
+            else
+            {
+                alert("ERROR", "Invalid argument: %s. Use 'individual' or 'not-individual'", argv[7]);
+                return;
+            }
         case 7:
             if (argv[6][0] == '"')
             {

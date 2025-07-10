@@ -8,21 +8,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void fill_params(params *inputs);
+static void init_params(params *inputs);
+static void fill_params(params *inputs, int argc);
 
 int cli_main(int argc, char *argv[])
 {
     params inputs;
-    inputs.src[0] = '\0';
-    inputs.dest[0] = '\0';
-    inputs.img_paths = NULL;
-    inputs.path_count = -1;
-    inputs.width = -1;
-    inputs.height = -1;
-    inputs.target_size = -1;
-
+    init_params(&inputs);
     parse_args(argc, argv, &inputs);
-    fill_params(&inputs);
+    fill_params(&inputs, argc);
 
     char output_dir[PATH_MAX];
     strcpy(output_dir, inputs.dest);
@@ -189,7 +183,18 @@ int cli_main(int argc, char *argv[])
     return 0;
 }
 
-static void fill_params(params *inputs)
+static void init_params(params *inputs)
+{
+    inputs->src[0] = '\0';
+    inputs->dest[0] = '\0';
+    inputs->img_paths = NULL;
+    inputs->path_count = -1;
+    inputs->width = -1;
+    inputs->height = -1;
+    inputs->target_size = -1;
+}
+
+static void fill_params(params *inputs, int argc)
 {
     while (inputs->img_paths == NULL)
     {
@@ -206,7 +211,7 @@ static void fill_params(params *inputs)
         get_img_path_list(inputs);
     }
     printf("Successfully Loaded %i images.\n", inputs->path_count);
-    if (inputs->path_count > 1 && !confirm("Manually enter processing parameters for each image?"))
+    if (inputs->path_count > 1 && argc < 8 && !confirm("Manually enter processing parameters for each image?"))
         individual_input = false;
 
     if (!individual_input)
