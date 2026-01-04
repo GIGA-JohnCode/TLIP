@@ -177,6 +177,9 @@ void parse_args(int argc, char *argv[], params *inputs)
     int temp;
     switch(argc)
     {
+        case 9:
+            if (strcasecmp(argv[8], "no-open") == 0)
+                suppress_view = true;
         case 8:
             if (strcasecmp(argv[7], "individual") == 0)
                 individual_input = true;
@@ -527,21 +530,29 @@ static void on_view_image_activate(GtkApplication *app, gpointer user_data)
                                   GTK_POLICY_AUTOMATIC,
                                   GTK_POLICY_AUTOMATIC);
 
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(view_image_filename, NULL);
-    if (!pixbuf)
+    // random gpt code start: CHANGED: stop using GdkPixbuf entirely cuz it got depricated
+    GError *error = NULL;
+    GdkTexture *texture = gdk_texture_new_from_file(
+        g_file_new_for_path(view_image_filename),
+        &error
+    );
+
+    if (!texture)
     {
         alert("ERROR", "Failed to load image: %s", view_image_filename);
+        g_clear_error(&error);
         return;
     }
 
     GtkWidget *picture = gtk_picture_new();
-    GdkPaintable *paintable = GDK_PAINTABLE(gdk_texture_new_for_pixbuf(pixbuf));
-    gtk_picture_set_paintable(GTK_PICTURE(picture), paintable);
+
+    /* CHANGED: texture already implements GdkPaintable */
+    gtk_picture_set_paintable(GTK_PICTURE(picture), GDK_PAINTABLE(texture));
     gtk_picture_set_can_shrink(GTK_PICTURE(picture), TRUE);
     gtk_picture_set_content_fit(GTK_PICTURE(picture), GTK_CONTENT_FIT_CONTAIN);
 
-    g_object_unref(paintable);
-    g_object_unref(pixbuf);
+    g_object_unref(texture);
+    // radom gpt code finish
 
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), picture);
     gtk_window_set_child(GTK_WINDOW(window), scrolled);

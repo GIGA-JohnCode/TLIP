@@ -13,6 +13,8 @@ static void fill_params(params *inputs, int argc);
 
 int cli_main(int argc, char *argv[])
 {
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     params inputs;
     init_params(&inputs);
     parse_args(argc, argv, &inputs);

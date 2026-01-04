@@ -10,6 +10,7 @@
 
 extern bool cli_mode;
 extern bool individual_input;
+extern bool suppress_view;
 extern GtkWindow *main_window;
 
 int cli_main(int argc, char *argv[]);

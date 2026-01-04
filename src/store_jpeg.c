@@ -144,7 +144,7 @@ static bool write_jpeg(byte* jpeg_buffer, unsigned long jpeg_size, char* output_
     }
 
     fclose(fptr);
-    if (individual_input)
+    if (individual_input && !suppress_view)
     {
         if (confirm("File successfully saved to: %s\nDo you want to open it?", output_path))
             view_image(output_path);
